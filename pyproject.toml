@@ -1,0 +1,17 @@
+[tool.pyright]
+include = ["src"]
+defineConstant = { DEBUG = true }
+
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+
+executionEnvironments = [
+  { root = "src", extraPaths = [
+    "/Users/sebastianbecker/.pyenv/versions/LSEG-Download/",
+  ], reportMissingImports = "warning" },
+]
+
+venvPath = "/Users/sebastianbecker/.pyenv/versions/LSEG-Download/"
+venv = "LSEG-Download"
+pythonVersion = "3.13"
+pythonPlatform = "Darwin"
