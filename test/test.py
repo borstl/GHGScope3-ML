@@ -3,7 +3,7 @@ Test the functions with example data.
 """
 import unittest
 import pandas as pd
-from functions.cleaning import cleaning_df
+from functions.cleaning import cleaning
 
 
 class TestFunctions(unittest.TestCase):
@@ -20,8 +20,8 @@ class TestFunctions(unittest.TestCase):
             "../src/Data/Datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-Second-Half.csv",
             index_col="Date"
         )
-        clean_first_df = cleaning_df(first_df)
-        clean_second_df = cleaning_df(second_df)
+        clean_first_df = cleaning(first_df)
+        clean_second_df = cleaning(second_df)
         joined_df = clean_first_df.join(clean_second_df, validate='one_to_one')
         joined_df.index.name = "Date"
         example_df.index = pd.to_datetime(example_df.index, format="%Y").to_period('Y')

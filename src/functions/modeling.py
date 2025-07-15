@@ -1,7 +1,7 @@
 """
 Functions to get the data into the right format to prepare for training
 """
-from cleaning import cleaning_df, fill_range_of_years
+from cleaning import cleaning, fill_range_of_years
 import pandas as pd
 
 def append_company_to_dataframe(df):

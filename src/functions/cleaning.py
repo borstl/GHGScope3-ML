@@ -13,7 +13,7 @@ def merge_series_custom(timeseries1, timeseries2):
     """
     merged = pd.Series(index=timeseries1.index, name=timeseries1.name)
     for column in timeseries1.index:
-        # TODO: what happens if there are multiple different indexes in a df?
+        # TODO: what happens if there are multiple different duplicated indexes in a df?
         timeseries1_col = timeseries1[column]
         timeseries2_col = timeseries2[column]
 
@@ -40,6 +40,7 @@ def merge_series_custom(timeseries1, timeseries2):
 def handle_duplicated_rows(df):
     """Historic data has sometimes duplicated rows"""
     # Remove empty columns first
+    # TODO: maybe not remove emtpy columns before concat them all
     without_empty_columns_df = remove_empty_columns(df)
     # Get duplicated Date Index Series
     duplicate_df = without_empty_columns_df[without_empty_columns_df.index.duplicated(keep=False)]
@@ -53,14 +54,14 @@ def handle_duplicated_rows(df):
 
 def remove_empty_columns(df):
     """Remove empty columns"""
-    df.replace("", np.nan, inplace=True)
+    df = df.replace("", np.nan)
     return df.dropna(how='all', axis=1, inplace=False)
 
 
 def aggregate_years(df):
     """Historic data have their row id as date, we want them as a clear year"""
     df.index = pd.to_datetime(df.index)
-    # TODO: use something different else other than 'sum'
+    # TODO: use other aggregation function than 'sum'
     aggregated_df = df.resample('YE').sum()
     aggregated_df.index = aggregated_df.index.to_period('Y')
     return aggregated_df
@@ -74,7 +75,7 @@ def fill_range_of_years(since, till, df):
     return merged_df
 
 
-def cleaning_df(df):
+def cleaning(df):
     """Coupling the different functions into one function"""
     unique_df = handle_duplicated_rows(df)
     striped_df = aggregate_years(unique_df)
@@ -83,7 +84,15 @@ def cleaning_df(df):
     return clean_df
 
 
+def group_static(df):
+    """Group static rows"""
+    # TODO: maybe not remove emtpy columns before concat them all
+    df = remove_empty_columns(df)
+    # TODO: use other aggregation function than 'sum'
+    return df.groupby("Instrument").sum()
+
+
 if __name__ == "__main__":
     dataframe = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",
                             index_col="Date")
-    modeled_dataframe = cleaning_df(dataframe)
+    modeled_dataframe = cleaning(dataframe)
