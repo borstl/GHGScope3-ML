@@ -20,14 +20,14 @@ def merge_series_custom(timeseries1, timeseries2):
         # if both values are missing
         if pd.isna(timeseries1_col) and pd.isna(timeseries2_col):
             merged[column] = np.nan
-        # if both values are same
-        elif timeseries1_col == timeseries2_col:
-            merged[column] = timeseries1_col
         # if first value is missing take the second one
         elif pd.isna(timeseries1_col):
             merged[column] = timeseries2_col
         # if second value is missing take the first one
         elif pd.isna(timeseries2_col):
+            merged[column] = timeseries1_col
+        # if both values are same
+        elif timeseries1_col == timeseries2_col:
             merged[column] = timeseries1_col
         # if both values are different, print it and take the first one
         # TODO: consider using mean of both values if possible?
@@ -53,15 +53,15 @@ def handle_duplicated_rows(df):
 
 def remove_empty_columns(df):
     """Remove empty columns"""
+    df.replace("", np.nan, inplace=True)
     return df.dropna(how='all', axis=1, inplace=False)
 
 
 def aggregate_years(df):
     """Historic data have their row id as date, we want them as a clear year"""
-    df_datetime = df
-    df_datetime.index = pd.to_datetime(df.index)
+    df.index = pd.to_datetime(df.index)
     # TODO: use something different else other than 'sum'
-    aggregated_df = df_datetime.resample('YE').sum()
+    aggregated_df = df.resample('YE').sum()
     aggregated_df.index = aggregated_df.index.to_period('Y')
     return aggregated_df
 
@@ -79,9 +79,11 @@ def cleaning_df(df):
     unique_df = handle_duplicated_rows(df)
     striped_df = aggregate_years(unique_df)
     clean_df = fill_range_of_years(2010, 2024, striped_df)
+    clean_df.index.name = "Date"
     return clean_df
 
 
 if __name__ == "__main__":
-    dataframe = pd.read_csv("../data/datasets/DataFrame-time-series-AAPL.OQ.csv", index_col="Date")
+    dataframe = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",
+                            index_col="Date")
     modeled_dataframe = cleaning_df(dataframe)

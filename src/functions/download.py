@@ -4,13 +4,16 @@ functions to download content from the LSEG database
 import lseg.data as ld
 import pandas as pd
 import progressbar
+from lseg.data import HeaderType
+
+from functions.cleaning import cleaning_df
 
 COMPANIES_PATH: str = "../data/parameter/companies.txt"
 STATIC_FIELDS_PATH: str = "../data/parameter/tr_values_static.txt"
-TIME_SERIES_FIELDS_PATH: str = "../data/parameter/tr_values_time_series.txt"
+TIME_SERIES_FIELDS_PATH: str = "../data/parameter/tr_values_history.txt"
 PARAMS = {"SDate": "CY2010", "EDate": "CY2024", "Period": "FY0", "Frq": "CY"}  # Yearly frequency
 CHUNK_SIZE = 10
-CHUNK_LIMIT = 1
+CHUNK_LIMIT = 2
 
 
 def download_content(companies_path, static_fields_path, time_series_fields_path):
@@ -24,16 +27,27 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
 
     ld.open_session()
     for company in companies:
-        print("Downloading static of " + company)
-        #static_df = download_all_static_chunks(company, static_fields)
-        #print("Downloading time series of " + company)
+        # print("Downloading static of " + company)
+        # static_df = download_all_static_chunks(company, static_fields)
+
+        print("Downloading time series of " + company)
         time_series_df = download_all_time_series_chunks(company, time_series_fields)
+
         #full_df = pd.concat([static_df, time_series_df])
+
         # reduced_df = remove_empty_columns(full_df)
-        #static_df.to_csv("../data/datasets/DataFrame-static-" + company + ".csv")
-        time_series_df.to_csv("../data/datasets/DataFrame-time_series-" + company + ".csv", index_label="Date")
-        print("Saved DataFrame-" + company + ".csv")
+        # static_df.to_csv("../data/datasets/DataFrame-Static-" + company + ".csv")
+        # time_series_df.to_csv("../data/datasets/DataFrame-Historic-" + company + ".csv", index_label="Date")
+        # print("Saved DataFrame-" + company + ".csv")
     ld.close_session()
+
+
+def load_static():
+    """Load static data from LSEG database"""
+
+
+def load_time_series():
+    """Load time series data from LSEG database"""
 
 
 def split_in_chunks(lst, chunk_size=CHUNK_SIZE, chunk_limit=None):
@@ -54,26 +68,25 @@ def download_static_from(company, fields):
 def download_all_static_chunks(company, fields):
     """Downloading all static fields from a company"""
     chunks = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
-    all_data = pd.DataFrame()
+    df = pd.DataFrame()
     for chunk in progressbar.progressbar(chunks):
-        df = download_static_from(company, chunk)
-        all_data = pd.concat([all_data, df], axis=1)
-    return all_data
+        new_df = download_static_from(company, chunk)
+        df = pd.concat([df, new_df], axis=1)
+    return df
 
 
 def download_all_time_series_chunks(company, fields):
-    """Downloading all fields from a company"""
+    """Downloading all fields from a company and join them together"""
     chunks = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
-    all_data = pd.DataFrame()
+    df = None
     for chunk in progressbar.progressbar(chunks):
-        df = download_time_series_from(company, chunk)
-        all_timestamps = all_data.index.union(df.index)
-        all_data_aligned = all_data.reindex(all_timestamps)
-        df_aligned = df.reindex(all_timestamps)
-        df_duplicate = df.duplicated().any()
-        aligned_duplicate = df_aligned.index.duplicated().any()
-        all_data = pd.concat([all_data_aligned, df_aligned], axis=1)
-    return all_data
+        new_df = download_time_series_from(company, chunk)
+        clean_df = cleaning_df(new_df)
+        if df is None:
+            df = clean_df
+        else:
+            df = df.join(clean_df, validate='one_to_one')
+    return df
 
 
 def download_time_series_from(company, fields):
@@ -85,6 +98,7 @@ def download_time_series_from(company, fields):
         #start="2010-01-01",
         #end="2024-12-31",
         parameters=PARAMS,
+        header_type=HeaderType.NAME,
     )
 
 
@@ -114,6 +128,7 @@ def download_gics_codes():
     )
     ld.close_session()
     gics_codes.to_csv("../data/datasets/gics_industry_codes.csv")
+
 
 if __name__ == "__main__":
     download_content(
