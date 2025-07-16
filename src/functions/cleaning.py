@@ -37,62 +37,62 @@ def merge_series_custom(timeseries1, timeseries2):
     return merged
 
 
-def handle_duplicated_rows(df):
+def handle_duplicated_rows(dataframe):
     """Historic data has sometimes duplicated rows"""
     # Remove empty columns first
     # TODO: maybe not remove emtpy columns before concat them all
-    without_empty_columns_df = remove_empty_columns(df)
+    without_empty_columns_dataframe = remove_empty_columns(dataframe)
     # Get duplicated Date Index Series
-    duplicate_df = without_empty_columns_df[without_empty_columns_df.index.duplicated(keep=False)]
-    merged_series = merge_series_custom(duplicate_df.iloc[0], duplicate_df.iloc[1])
+    duplicate_dataframe = without_empty_columns_dataframe[without_empty_columns_dataframe.index.duplicated(keep=False)]
+    merged_series = merge_series_custom(duplicate_dataframe.iloc[0], duplicate_dataframe.iloc[1])
     # replace series with merged series
-    transposed_df_series = pd.DataFrame(merged_series).transpose()
-    cleaned_df = pd.concat([without_empty_columns_df, transposed_df_series])
-    ordered_df = cleaned_df.sort_index()
-    return ordered_df
+    transposed_dataframe_series = pd.DataFrame(merged_series).transpose()
+    cleaned_dataframe = pd.concat([without_empty_columns_dataframe, transposed_dataframe_series])
+    ordered_dataframe = cleaned_dataframe.sort_index()
+    return ordered_dataframe
 
 
-def remove_empty_columns(df):
+def remove_empty_columns(dataframe):
     """Remove empty columns"""
-    df = df.replace("", np.nan)
-    return df.dropna(how='all', axis=1, inplace=False)
+    dataframe = dataframe.replace("", np.nan)
+    return dataframe.dropna(how='all', axis=1, inplace=False)
 
 
 def aggregate_years(df):
     """Historic data have their row id as date, we want them as a clear year"""
     df.index = pd.to_datetime(df.index)
     # TODO: use other aggregation function than 'sum'
-    aggregated_df = df.resample('YE').sum()
-    aggregated_df.index = aggregated_df.index.to_period('Y')
-    return aggregated_df
+    aggregated_dataframe = df.resample('YE').sum()
+    aggregated_dataframe.index = aggregated_dataframe.index.to_period('Y')
+    return aggregated_dataframe
 
 
-def fill_range_of_years(since, till, df):
+def fill_range_of_years(since, till, dataframe):
     """This is to have the same number of rows throughout every dataframe"""
     period = pd.period_range(start=since, end=till, freq='Y')
-    df_structure = pd.DataFrame(index=period)
-    merged_df = df_structure.join(df, how='left')
-    return merged_df
+    dataframe_structure = pd.DataFrame(index=period)
+    merged_dataframe = dataframe_structure.join(dataframe, how='left')
+    return merged_dataframe
 
 
-def cleaning(df):
+def cleaning(dataframe):
     """Coupling the different functions into one function"""
-    unique_df = handle_duplicated_rows(df)
-    striped_df = aggregate_years(unique_df)
-    clean_df = fill_range_of_years(2010, 2024, striped_df)
-    clean_df.index.name = "Date"
-    return clean_df
+    unique_dataframe = handle_duplicated_rows(dataframe)
+    striped_dataframe = aggregate_years(unique_dataframe)
+    clean_dataframe = fill_range_of_years(2010, 2024, striped_dataframe)
+    clean_dataframe.index.name = "Date"
+    return clean_dataframe
 
 
-def group_static(df):
+def group_static(dataframe):
     """Group static rows"""
     # TODO: maybe not remove emtpy columns before concat them all
-    df = remove_empty_columns(df)
+    dataframe = remove_empty_columns(dataframe)
     # TODO: use other aggregation function than 'sum'
-    return df.groupby("Instrument").sum()
+    return dataframe.groupby("Instrument").sum()
 
 
 if __name__ == "__main__":
-    dataframe = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",
+    data = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",
                             index_col="Date")
-    modeled_dataframe = cleaning(dataframe)
+    modeled_dataframe = cleaning(data)

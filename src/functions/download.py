@@ -7,13 +7,14 @@ import progressbar
 
 from lseg.data import HeaderType
 from functions.cleaning import cleaning, group_static
+from functions.modeling import merge_static_and_historic
 
 COMPANIES_PATH: str = "../data/parameter/companies.txt"
 STATIC_FIELDS_PATH: str = "../data/parameter/tr_values_static.txt"
 TIME_SERIES_FIELDS_PATH: str = "../data/parameter/tr_values_history.txt"
 PARAMS = {"SDate": "CY2010", "EDate": "CY2024", "Period": "FY0", "Frq": "CY"}  # Yearly frequency
-CHUNK_SIZE = 10
-CHUNK_LIMIT = 2
+CHUNK_SIZE = 1000
+CHUNK_LIMIT = 4
 
 
 def download_content(companies_path, static_fields_path, time_series_fields_path):
@@ -28,17 +29,15 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
     ld.open_session()
     for company in companies:
         print("Downloading static of " + company)
-        static_df = download_all_static_chunks(company, static_fields)
+        static_dataframe = download_all_static_chunks(company, static_fields)
 
-        # print("Downloading time series of " + company)
-        # time_series_df = download_all_time_series_chunks(company, time_series_fields)
+        print("Downloading time series of " + company)
+        historic_dataframe = download_all_time_series_chunks(company, time_series_fields)
 
-        # full_df = pd.concat([static_df, time_series_df])
+        full_dataframe = merge_static_and_historic(static_dataframe, historic_dataframe)
 
         # reduced_df = remove_empty_columns(full_df)
-        # static_df.to_csv("../data/datasets/DataFrame-Static-" + company + ".csv")
-        # time_series_df.to_csv("../data/datasets/DataFrame-Historic-" + company + ".csv", index_label="Date")
-        # print("Saved DataFrame-" + company + ".csv")
+        full_dataframe.to_csv("../data/datasets/" + company + ".csv", index_label="Date")
     ld.close_session()
 
 
@@ -123,5 +122,5 @@ def download_gics_codes():
 
 if __name__ == "__main__":
     download_content(
-        "../data/parameter/companie.txt", STATIC_FIELDS_PATH, TIME_SERIES_FIELDS_PATH
+        "../data/parameter/company.txt", STATIC_FIELDS_PATH, TIME_SERIES_FIELDS_PATH
     )
