@@ -39,17 +39,19 @@ def merge_series_custom(timeseries1, timeseries2):
 
 def handle_duplicated_rows(dataframe):
     """Historic data has sometimes duplicated rows"""
-    # Remove empty columns first
-    # TODO: maybe not remove emtpy columns before concat them all
-    without_empty_columns_dataframe = remove_empty_columns(dataframe)
-    # Get duplicated Date Index Series
-    duplicate_dataframe = without_empty_columns_dataframe[without_empty_columns_dataframe.index.duplicated(keep=False)]
-    merged_series = merge_series_custom(duplicate_dataframe.iloc[0], duplicate_dataframe.iloc[1])
-    # replace series with merged series
-    transposed_dataframe_series = pd.DataFrame(merged_series).transpose()
-    cleaned_dataframe = pd.concat([without_empty_columns_dataframe, transposed_dataframe_series])
-    ordered_dataframe = cleaned_dataframe.sort_index()
-    return ordered_dataframe
+    if dataframe.index.has_duplicates:
+        # Remove empty columns first
+        # TODO: maybe not remove emtpy columns before concat them all
+        without_empty_columns_dataframe = remove_empty_columns(dataframe)
+        # Get duplicated Date Index Series
+        duplicate_index = without_empty_columns_dataframe[without_empty_columns_dataframe.index.duplicated(keep=False)]
+        merged_series = merge_series_custom(duplicate_index.iloc[0], duplicate_index.iloc[1])
+        # replace series with merged series
+        transposed_dataframe_series = pd.DataFrame(merged_series).transpose()
+        cleaned_dataframe = pd.concat([without_empty_columns_dataframe, transposed_dataframe_series])
+        ordered_dataframe = cleaned_dataframe.sort_index()
+        return ordered_dataframe
+    return dataframe
 
 
 def remove_empty_columns(dataframe):

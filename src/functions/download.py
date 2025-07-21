@@ -7,14 +7,14 @@ import progressbar
 
 from lseg.data import HeaderType
 from functions.cleaning import cleaning, group_static
-from functions.modeling import merge_static_and_historic
+from functions.modeling import join_static_and_historic, concat_companies
 
 COMPANIES_PATH: str = "../data/parameter/companies.txt"
 STATIC_FIELDS_PATH: str = "../data/parameter/tr_values_static.txt"
 TIME_SERIES_FIELDS_PATH: str = "../data/parameter/tr_values_history.txt"
 PARAMS = {"SDate": "CY2010", "EDate": "CY2024", "Period": "FY0", "Frq": "CY"}  # Yearly frequency
-CHUNK_SIZE = 1000
-CHUNK_LIMIT = 4
+CHUNK_SIZE = 10
+CHUNK_LIMIT = 2
 
 
 def download_content(companies_path, static_fields_path, time_series_fields_path):
@@ -26,6 +26,7 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
     with open(time_series_fields_path, encoding="utf-8") as f:
         time_series_fields = [line.strip() for line in f]
 
+    full_dataframe = pd.DataFrame()
     ld.open_session()
     for company in companies:
         print("Downloading static of " + company)
@@ -34,10 +35,17 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
         print("Downloading time series of " + company)
         historic_dataframe = download_all_time_series_chunks(company, time_series_fields)
 
-        full_dataframe = merge_static_and_historic(static_dataframe, historic_dataframe)
+        company_frame = join_static_and_historic(static_dataframe, historic_dataframe)
+
+        if full_dataframe.empty:
+            full_dataframe = company_frame
+        else:
+            # TODO: get company id and year in first places
+            debug_dataframe = concat_companies(full_dataframe, company_frame)
+            full_dataframe = debug_dataframe
 
         # reduced_df = remove_empty_columns(full_df)
-        full_dataframe.to_csv("../data/datasets/" + company + ".csv", index_label="Date")
+        # full_dataframe.to_csv("../data/datasets/" + company + ".csv", index_label="Date")
     ld.close_session()
 
 
@@ -54,11 +62,11 @@ def split_in_chunks(lst, chunk_size=CHUNK_SIZE, chunk_limit=None):
 def download_all_static_chunks(company, fields):
     """Downloading all static fields from a company"""
     chunks = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
-    dataframe = None
+    dataframe = pd.DataFrame()
     for chunk in progressbar.progressbar(chunks):
         new_data = ld.get_data(universe=company, fields=chunk)
         clean_dataframe = group_static(new_data)
-        if dataframe is None:
+        if dataframe.empty:
             dataframe = clean_dataframe
         else:
             dataframe = dataframe.join(clean_dataframe, how="left")
@@ -68,11 +76,11 @@ def download_all_static_chunks(company, fields):
 def download_all_time_series_chunks(company, fields):
     """Downloading all fields from a company and join them together"""
     chunks = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
-    dataframe = None
+    dataframe = pd.DataFrame()
     for chunk in progressbar.progressbar(chunks):
         new_data = download_time_series_from(company, chunk)
         clean_dataframe = cleaning(new_data)
-        if dataframe is None:
+        if dataframe.empty:
             dataframe = clean_dataframe
         else:
             dataframe = dataframe.join(clean_dataframe, validate='one_to_one')

@@ -16,7 +16,7 @@ def append_company_to(dataframe):
     return dataframe.append(dataframe)
 
 
-def merge_static_and_historic(static_dataframe, historic_dataframe):
+def join_static_and_historic(static_dataframe, historic_dataframe):
     """Merge static and historic data into one dataframe"""
     blown_up_static_dataframe = blow_up(static_dataframe, 2010, 2024)
     merged_dataframe = historic_dataframe.join(blown_up_static_dataframe, how='left', validate='one_to_one')
@@ -33,9 +33,15 @@ def blow_up(dataframe, since, till):
     return dataframe
 
 
+def concat_companies(dataframe, new_data):
+    """Merge new data into one dataframe"""
+    dataframe = pd.concat([dataframe, new_data], ignore_index=True, sort=False)
+    return dataframe
+
+
 if __name__ == "__main__":
     static_df = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Static-Example-Company-A-First-Half.csv",
                             index_col="Date")
     historic_df = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",
                               index_col="Date")
-    merge_static_and_historic(static_df, historic_df)
+    join_static_and_historic(static_df, historic_df)
