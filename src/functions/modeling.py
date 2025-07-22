@@ -7,11 +7,11 @@ import pandas as pd
 def append_company_to(dataframe):
     """
     The dataframe of a new company should be appended to the other ones
-    | company_id | year | revenue |
-    | A | 2020 | 4$ |
-    | A | 2021 | 3$ |
-    | B | 2020 | 3$ |
-    | B | 2021 | 5$ |
+    | company_name | year | revenue | ... |
+    | A | 2020 | 4$ | ... |
+    | A | 2021 | 3$ | ... |
+    | B | 2020 | 3$ | ... |
+    | B | 2021 | 5$ | ... |
     """
     return dataframe.append(dataframe)
 
@@ -32,9 +32,11 @@ def blow_up(dataframe, since, till):
     dataframe.index.name = "Date"
     return dataframe
 
-
+# TODO: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.insert.html
 def concat_companies(dataframe, new_data):
     """Merge new data into one dataframe"""
+    date_frame = pd.DataFrame(new_data.index.to_series(), columns=['Date'])
+    new_data.insert(0, 'Date', date_frame)
     dataframe = pd.concat([dataframe, new_data], ignore_index=True, sort=False)
     return dataframe
 

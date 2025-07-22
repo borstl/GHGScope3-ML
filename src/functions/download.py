@@ -38,6 +38,8 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
         company_frame = join_static_and_historic(static_dataframe, historic_dataframe)
 
         if full_dataframe.empty:
+            date_frame = pd.DataFrame(company_frame.index.to_series(), columns=['Date'])
+            company_frame.insert(0, 'Date', date_frame)
             full_dataframe = company_frame
         else:
             # TODO: get company id and year in first places
@@ -64,7 +66,11 @@ def download_all_static_chunks(company, fields):
     chunks = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
     dataframe = pd.DataFrame()
     for chunk in progressbar.progressbar(chunks):
-        new_data = ld.get_data(universe=company, fields=chunk)
+        new_data = ld.get_data(
+            universe=company,
+            fields=chunk,
+            header_type=HeaderType.NAME,
+        )
         clean_dataframe = group_static(new_data)
         if dataframe.empty:
             dataframe = clean_dataframe
