@@ -3,6 +3,7 @@ Collection of functions to help clean dataframes
 """
 import pandas as pd
 import numpy as np
+from pandas import Series
 
 
 def merge_series_custom(timeseries1, timeseries2):
@@ -64,9 +65,17 @@ def aggregate_years(df):
     """Historic data have their row id as date, we want them as a clear year"""
     df.index = pd.to_datetime(df.index)
     # TODO: use other aggregation function than 'sum'
-    aggregated_dataframe = df.resample('YE').sum()
+    # TODO: drop empty fields per column and then aggregate real values
+    aggregated_dataframe = df.resample('YE').apply(custom_resampler)
     aggregated_dataframe.index = aggregated_dataframe.index.to_period('Y')
     return aggregated_dataframe
+
+
+def custom_resampler(arraylike: Series):
+    # TODO: some series have different types as values e.g. int and string
+    non_null_series = arraylike.dropna()
+    result = non_null_series.mean()
+    return result
 
 
 def fill_range_of_years(since, till, dataframe):
@@ -86,18 +95,13 @@ def cleaning(dataframe):
     return clean_dataframe
 
 
-def group_static(dataframe):
+def aggregate_static(dataframe):
     """Aggregate all static rows"""
-    # TODO: maybe not remove emtpy columns before concat them all
     dataframe = remove_empty_columns(dataframe)
     # drop all null per series(columns) and get the first value
     new_dataframe = dataframe.apply(lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA).to_frame().T
     return new_dataframe
 
-
-def aggregate_static():
-    """Aggregate all static rows"""
-    return 1
 
 if __name__ == "__main__":
     data = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",

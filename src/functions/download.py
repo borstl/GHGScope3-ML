@@ -7,7 +7,7 @@ import pandas as pd
 import progressbar
 
 from lseg.data import HeaderType
-from functions.cleaning import cleaning, group_static
+from functions.cleaning import cleaning, aggregate_static
 from functions.modeling import join_static_and_historic, concat_companies
 
 COMPANIES_PATH: str = "../data/parameter/companies.txt"
@@ -33,13 +33,14 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
     full_dataframe = pd.DataFrame()
     ld.open_session()
     for company in companies:
-        print("Downloading static of " + company)
-        static_dataframe = download_all_static_chunks(company, static_fields)
+        #print("Downloading static of " + company)
+        #static_dataframe = download_all_static_chunks(company, static_fields)
 
         print("Downloading time series of " + company)
-        historic_dataframe = download_all_time_series_chunks(company, time_series_fields)
+        #historic_dataframe = download_all_time_series_chunks(company, time_series_fields)
+        company_frame = download_all_time_series_chunks(company, time_series_fields)
 
-        company_frame = join_static_and_historic(static_dataframe, historic_dataframe)
+        #company_frame = join_static_and_historic(static_dataframe, historic_dataframe)
 
         if full_dataframe.empty:
             date_frame = pd.DataFrame(company_frame.index.to_series(), columns=['Date'])
@@ -74,7 +75,7 @@ def download_all_static_chunks(company, fields):
             fields=chunk,
             header_type=HeaderType.NAME,
         )
-        clean_dataframe = group_static(new_data)
+        clean_dataframe = aggregate_static(new_data)
         if dataframe.empty:
             dataframe = clean_dataframe
         else:
