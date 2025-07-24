@@ -87,12 +87,17 @@ def cleaning(dataframe):
 
 
 def group_static(dataframe):
-    """Group static rows"""
+    """Aggregate all static rows"""
     # TODO: maybe not remove emtpy columns before concat them all
     dataframe = remove_empty_columns(dataframe)
-    # TODO: use other aggregation function than 'sum'
-    return dataframe.groupby("Instrument").sum()
+    # drop all null per series(columns) and get the first value
+    new_dataframe = dataframe.apply(lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA).to_frame().T
+    return new_dataframe
 
+
+def aggregate_static():
+    """Aggregate all static rows"""
+    return 1
 
 if __name__ == "__main__":
     data = pd.read_csv("../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv",

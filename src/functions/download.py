@@ -1,6 +1,7 @@
 """
 functions to download content from the LSEG database
 """
+import warnings
 import lseg.data as ld
 import pandas as pd
 import progressbar
@@ -14,7 +15,10 @@ STATIC_FIELDS_PATH: str = "../data/parameter/tr_values_static.txt"
 TIME_SERIES_FIELDS_PATH: str = "../data/parameter/tr_values_history.txt"
 PARAMS = {"SDate": "CY2010", "EDate": "CY2024", "Period": "FY0", "Frq": "CY"}  # Yearly frequency
 CHUNK_SIZE = 10
-CHUNK_LIMIT = 2
+CHUNK_LIMIT = 3
+
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def download_content(companies_path, static_fields_path, time_series_fields_path):
@@ -42,7 +46,6 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
             company_frame.insert(0, 'Date', date_frame)
             full_dataframe = company_frame
         else:
-            # TODO: get company id and year in first places
             debug_dataframe = concat_companies(full_dataframe, company_frame)
             full_dataframe = debug_dataframe
 
@@ -75,7 +78,7 @@ def download_all_static_chunks(company, fields):
         if dataframe.empty:
             dataframe = clean_dataframe
         else:
-            dataframe = dataframe.join(clean_dataframe, how="left")
+            dataframe = dataframe.merge(clean_dataframe, how="left")
     return dataframe
 
 
