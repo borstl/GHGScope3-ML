@@ -22,7 +22,6 @@ def blow_up(df: DataFrame, since: datetime, till: datetime) -> DataFrame:
     """
     Duplicate rows in static dataframe until it has the sice of
     historic dataframes (e.g. row 2010-2024)
-    :rtype: DataFrame
     """
     for _ in range(int(since.year), int(till.year)):
         df = pd.concat([df, df.iloc[[0]]], ignore_index=True)
@@ -32,7 +31,7 @@ def blow_up(df: DataFrame, since: datetime, till: datetime) -> DataFrame:
     return df
 
 
-def concat_companies(df: DataFrame, new_data: DataFrame):
+def concat_companies(df: DataFrame, new_data: DataFrame) -> DataFrame:
     """Merge new data into one dataframe"""
     dates: DataFrame = pd.DataFrame(new_data.index.to_series(), columns=['Date'])
     new_data.insert(0, 'Date', dates)

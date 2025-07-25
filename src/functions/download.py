@@ -43,7 +43,6 @@ def download_content(companies_path, static_fields_path, time_series_fields_path
 
         print("Downloading time series of " + company)
         historic_dataframe = download_all_time_series_chunks(company, time_series_fields)
-        # company_frame: DataFrame = download_all_time_series_chunks(company, time_series_fields)
 
         company_frame = join_static_and_historic(static_dataframe, historic_dataframe)
 

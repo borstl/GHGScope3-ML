@@ -9,7 +9,7 @@ import numpy as np
 from pandas import Series, DataFrame
 
 EXAMPLE_CSV_PATH: str = "../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv"
-SINCE: datetime = datetime(2020, 1, 1)
+SINCE: datetime = datetime(2010, 1, 1)
 TILL: datetime = datetime(2024, 12, 31)
 
 
@@ -50,7 +50,6 @@ def handle_duplicated_rows(df: DataFrame) -> DataFrame:
     """Historic data has sometimes duplicated rows"""
     if df.index.has_duplicates:
         # Remove empty columns first
-        # TODO: maybe not remove emtpy columns before concat them all
         without_empty_columns: DataFrame = remove_empty_columns(df)
         # Get duplicated Date Index Series
         duplicated_indexes: np.ndarray = without_empty_columns.index.duplicated(keep=False)
@@ -68,22 +67,16 @@ def remove_empty_columns(dataframe: DataFrame) -> DataFrame:
     return replaced.dropna(how='all', axis=1, inplace=False)
 
 
-def aggregate_years(df: DataFrame) -> DataFrame:
+def aggregate_years(without_empty_columns: DataFrame) -> DataFrame:
     """Historic data have their row id as date, we want them as a clear year"""
-    df.index = pd.to_datetime(df.index)
-    # TODO: use other aggregation function than 'sum'
-    # TODO: drop empty fields per column and then aggregate real values
-    aggregated: DataFrame = df.resample('YE').apply(custom_resampler)
-    aggregated.index = aggregated.to_period('Y')
+    without_empty_columns = remove_empty_columns(without_empty_columns)
+    without_empty_columns.index = pd.to_datetime(without_empty_columns.index)
+    aggregated: DataFrame = (without_empty_columns.resample('YE')
+                             .agg(
+        lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA)
+    )
+    aggregated = aggregated.to_period('Y')
     return aggregated
-
-
-def custom_resampler(arraylike: Series):
-    """Something"""
-    # TODO: some series have different types as values e.g. int and string
-    non_null: Series = arraylike.dropna()
-    result = non_null
-    return result
 
 
 def fill_range_of_years(since: datetime, till: datetime, dataframe: DataFrame) -> DataFrame:
@@ -107,7 +100,7 @@ def aggregate_static(df: DataFrame) -> DataFrame:
     """Aggregate all static rows"""
     df = remove_empty_columns(df)
     return df.agg(
-        lambda col: col.dropna().iloc[0]if col.notna().any() else pd.NA
+        lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA
     ).to_frame().transpose()
 
 
