@@ -5,66 +5,47 @@ import warnings
 import lseg.data as ld
 import pandas as pd
 import progressbar
+import parameters
 
+from concurrent.futures import ThreadPoolExecutor
 from lseg.data import HeaderType
+from lseg.data._errors import LDError
 from pandas import DataFrame
 from functions.cleaning import cleaning_history, aggregate_static
 from functions.modeling import join_static_and_historic, concat_companies
-
-COMPANIES_PATH: str = "../data/parameter/companies.txt"
-STATIC_FIELDS_PATH: str = "../data/parameter/tr_values_static.txt"
-TIME_SERIES_FIELDS_PATH: str = "../data/parameter/tr_values_history.txt"
-# SKIP: int = 22_800
-PARAMS: dict = {
-    "SDate": "CY2010",
-    "EDate": "CY2024",
-    "Period": "FY0",
-    "Frq": "CY"  # Yearly frequency
-}
-CHUNK_SIZE: int = 100
-CHUNK_LIMIT: int | None = None
+from functions.parameters import Parameter
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def download_content(companies_path, static_fields_path, time_series_fields_path):
-    """Downloading content from LSEG database"""
-    with open(companies_path, encoding="utf-8") as f:
-        companies: list[str] = [line.strip() for line in f]
-    with open(static_fields_path, encoding="utf-8") as f:
-        static_fields: list[str] = [line.strip() for line in f]
-    with open(time_series_fields_path, encoding="utf-8") as f:
-        historic_fields: list[str] = [line.strip() for line in f]
-    download_all_frames(companies, static_fields, historic_fields)
-
-
-def download_all_frames(companies, static_fields, historic_fields):
-    """Downloading all frames from LSEG database"""
-    full_dataframe: DataFrame = pd.DataFrame()
+def parallel_download(threads: int):
+    """Downloading frames from LSEG database concurrently"""
     ld.open_session()
-    for company in companies:
-        static: DataFrame = download_all_static_chunks(company, static_fields)
-        # included_fields: list[str] = static_fields[SKIP:]
-        # static_dataframe = download_all_static_chunks(company, included_fields)
-        # static_dataframe.to_csv("../data/datasets/static/" + company + ".csv")
-        historic: DataFrame = download_all_time_series_chunks(company, historic_fields)
-        company_dataframe: DataFrame = join_static_and_historic(static, historic)
-        full_dataframe = bundle(full_dataframe, company_dataframe)
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        executor.map(download_all_frames, params.companies)
     ld.close_session()
 
 
-def bundle(new_dataframe: DataFrame, old_dataframe: DataFrame) -> DataFrame:
+def download_all_frames(company):
+    """Downloading all frames from LSEG database"""
+    static: DataFrame = download_all_static_chunks(company)
+    historic: DataFrame = download_all_historic_chunks(company)
+    company_dataframe: DataFrame = join_static_and_historic(static, historic)
+    company_dataframe.to_csv(parameters.SAFE_DATA_PATH + company + ".csv")
+
+
+def bundle(incoming: DataFrame, starter: DataFrame) -> DataFrame:
     """Concatenate two company dataframes if there is already one filled with data"""
-    if old_dataframe.empty:
-        date_frame = pd.DataFrame(new_dataframe.index.to_series(), columns=['Date'])
-        new_dataframe.insert(0, 'Date', date_frame)
-        return new_dataframe
-    return concat_companies(old_dataframe, new_dataframe)
+    if starter.empty:
+        date_frame = pd.DataFrame(incoming.index.to_series(), columns=['Date'])
+        incoming.insert(0, 'Date', date_frame)
+        return incoming
+    return concat_companies(starter, incoming)
 
 
 def split_in_chunks(
         field_list: list[str],
-        chunk_size: int = CHUNK_SIZE,
+        chunk_size: int = parameters.CHUNK_SIZE,
         chunk_limit: int | None = None
 ) -> list[list]:
     """Splitting a list in chunks of e.g. 1000 items"""
@@ -76,41 +57,54 @@ def split_in_chunks(
     return chunks
 
 
-def download_all_static_chunks(company: str, fields: list[str]) -> DataFrame:
+def download_all_static_chunks(company: str) -> DataFrame:
     """Downloading all static fields from a company"""
-    print("Downloading static of " + company)
-    chunks: list[list] = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
+    chunks: list[list] = split_in_chunks(
+        params.static_fields,
+        parameters.CHUNK_SIZE,
+        parameters.CHUNK_LIMIT
+    )
     dataframe: DataFrame = pd.DataFrame()
-    for chunk in progressbar.progressbar(chunks):
-        new_data: DataFrame = ld.get_data(
-            universe=company,
-            fields=chunk,
-            header_type=HeaderType.NAME,
-        )
-        clean_dataframe = aggregate_static(new_data)
-        if dataframe.empty:
-            dataframe = clean_dataframe
-        else:
-            dataframe = dataframe.merge(clean_dataframe, how="left")
+
+    try:
+        for chunk in progressbar.progressbar(chunks, prefix="Downloading static data of " + company):
+            new_data: DataFrame = ld.get_data(
+                universe=params.companies,
+                fields=chunk,
+                header_type=HeaderType.NAME,
+            )
+            clean_dataframe = aggregate_static(new_data)
+            if dataframe.empty:
+                dataframe = clean_dataframe
+            else:
+                dataframe = dataframe.merge(clean_dataframe, how="left")
+    except LDError as e:
+            print("Static data couldn't be loaded for company " + company + ". " + e.message)
     return dataframe
 
 
-def download_all_time_series_chunks(company: str, fields: list[str]) -> DataFrame:
+def download_all_historic_chunks(company: str) -> DataFrame:
     """Downloading all fields from a company and join them together"""
-    print("Downloading time series of " + company)
-    chunks: list[list] = split_in_chunks(fields, CHUNK_SIZE, CHUNK_LIMIT)
+    chunks: list[list] = split_in_chunks(
+        params.historic_fields,
+        parameters.CHUNK_SIZE,
+        parameters.CHUNK_LIMIT
+    )
     dataframe: DataFrame = pd.DataFrame()
-    for chunk in progressbar.progressbar(chunks):
-        new_data: DataFrame = download_time_series_from(company, chunk)
-        clean_dataframe = cleaning_history(new_data)
-        if dataframe.empty:
-            dataframe = clean_dataframe
-        else:
-            dataframe = dataframe.join(clean_dataframe, validate='one_to_one')
+    try:
+        for chunk in progressbar.progressbar(chunks, prefix="Downloading history of " + company):
+            new_data: DataFrame = download_historic_from(company, chunk)
+            clean_dataframe = cleaning_history(new_data)
+            if dataframe.empty:
+                dataframe = clean_dataframe
+            else:
+                dataframe = dataframe.join(clean_dataframe, validate='one_to_one')
+    except LDError as e:
+            print("Historic data couldn't be loaded for company " + company + ". " + e.message)
     return dataframe
 
 
-def download_time_series_from(company: str, fields: list[str]) -> DataFrame:
+def download_historic_from(company: str, fields: list[str]) -> DataFrame:
     """Downloading content of with time series fields from a company"""
     return ld.get_history(
         universe=company,
@@ -118,7 +112,7 @@ def download_time_series_from(company: str, fields: list[str]) -> DataFrame:
         # interval="yearly",
         # start="2010-01-01",
         # end="2024-12-31",
-        parameters=PARAMS,
+        parameters=parameters.PARAMS,
         header_type=HeaderType.NAME,
     )
 
@@ -155,6 +149,5 @@ def configure_lseg():
 
 
 if __name__ == "__main__":
-    download_content(
-        "../data/parameter/company.txt", STATIC_FIELDS_PATH, TIME_SERIES_FIELDS_PATH
-    )
+    params = Parameter()
+    parallel_download(1)
