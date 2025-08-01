@@ -13,9 +13,9 @@ PARAMS: dict = {
     "Period": "FY0",
     "Frq": "CY"  # Yearly frequency
 }
-SKIP: int = 22_800
-CHUNK_SIZE: int = 20
-CHUNK_LIMIT: int | None = 1
+SKIP: int = 700
+CHUNK_SIZE: int = 100
+CHUNK_LIMIT: int | None = None
 
 
 class Parameter:
