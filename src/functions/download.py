@@ -49,14 +49,19 @@ def bundle(incoming: DataFrame, starter: DataFrame) -> DataFrame:
 def split_in_chunks(
         field_list: list[str],
         chunk_size: int = parameters.CHUNK_SIZE,
-        chunk_limit: int | None = None
+        chunk_limit: int | None = parameters.CHUNK_LIMIT,
+        skipped_chunks: int | None = parameters.SKIP_CHUNKS,
 ) -> list[list]:
     """Splitting a list in chunks of e.g. 1000 items"""
     chunks: list[list] = []
     for i in range(0, len(field_list), chunk_size):
         chunks.append(field_list[i: i + chunk_size])
-    if chunk_limit is not None:
+    if chunk_limit is not None and skipped_chunks is not None:
+        return chunks[skipped_chunks:chunk_limit]
+    if chunk_limit is not None and skipped_chunks is None:
         return chunks[:chunk_limit]
+    if chunk_limit is None and skipped_chunks is not None:
+        return chunks[skipped_chunks:]
     return chunks
 
 
