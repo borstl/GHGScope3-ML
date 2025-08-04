@@ -67,30 +67,28 @@ def remove_empty_columns(dataframe: DataFrame) -> DataFrame:
 def aggregate_years(dataframe: DataFrame) -> DataFrame:
     """Historic data have their row id as date, we want them as a clear year"""
     dataframe.index = pd.to_datetime(dataframe.index)
-    aggregated: DataFrame = (
+    return (
         dataframe[dataframe.index.to_series().between(SINCE, TILL)]
         .resample('YE')
         .agg(lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA)
     )
-    return aggregated.to_period('Y')
 
 
 def fill_range_of_years(df: DataFrame) -> DataFrame:
     """This is to have the same number of rows throughout every dataframe"""
     structure: DataFrame = pd.DataFrame(
-        index=pd.period_range(start=SINCE, end=TILL, freq='Y')
+        index=pd.period_range(start=SINCE, end=TILL, freq='Y', name='Date'),
     )
-    # TODO
-    debug = structure.join(df)
-    return debug
+    return df.reindex(index=structure.index)
 
 def cleaning_history(df: DataFrame) -> DataFrame:
     """Coupling the different functions into one function"""
     unique: DataFrame = handle_duplicated_rows(df)
-    striped_dataframe: DataFrame = aggregate_years(unique)
-    clean: DataFrame = fill_range_of_years(striped_dataframe)
-    clean.index.name = "Date"
-    return clean
+    striped: DataFrame = aggregate_years(unique)
+    filled: DataFrame = fill_range_of_years(striped)
+    if isinstance(filled.columns, pd.MultiIndex):
+        filled.columns = filled.columns.droplevel(0)
+    return filled
 
 
 def aggregate_static(df: DataFrame) -> DataFrame:

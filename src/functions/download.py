@@ -29,7 +29,7 @@ def download_all_frames(companies: list[str]):
     companies_chunks: list[list[str]] = split_in_chunks(companies, 10)
     # with ThreadPoolExecutor(max_workers=10) as executor:
     #    static_result = executor.map(download_all_static_chunks, companies_chunks)
-    #with ThreadPoolExecutor(max_workers=1) as executor:
+    # with ThreadPoolExecutor(max_workers=1) as executor:
     #    historic_result = executor.map(download_all_historic_chunks, companies_chunks)
     download_all_historic_chunks(companies_chunks[0])
     # company_dataframe: DataFrame = join_static_and_historic(static, historic)
@@ -70,19 +70,19 @@ def download_all_static_chunks(companies: list[str]) -> DataFrame:
     dataframe: DataFrame = pd.DataFrame()
 
     for chunk in progressbar.progressbar(chunks, prefix="Downloading static data " + companies[0]):
-        #try:
-            new_data: DataFrame = ld.get_data(
-                universe=companies,
-                fields=chunk,
-                header_type=HeaderType.NAME,
-            )
-            clean_dataframe = group_static(new_data)
-            if dataframe.empty:
-                dataframe = clean_dataframe
-            else:
-                dataframe = dataframe.merge(clean_dataframe, how="left")
-        #except Exception as e:
-        #    print(e)
+        # try:
+        new_data: DataFrame = ld.get_data(
+            universe=companies,
+            fields=chunk,
+            header_type=HeaderType.NAME,
+        )
+        clean_dataframe = group_static(new_data)
+        if dataframe.empty:
+            dataframe = clean_dataframe
+        else:
+            dataframe = dataframe.merge(clean_dataframe, how="left")
+    # except Exception as e:
+    #    print(e)
     dataframe.to_csv("../data/datasets/static/companies-from-" + companies[0] + ".csv", index=False)
     return dataframe
 
@@ -94,18 +94,14 @@ def download_all_historic_chunks(companies: list[str]) -> DataFrame:
         parameters.CHUNK_SIZE,
         parameters.CHUNK_LIMIT
     )
-    skipped_list: list[list] = chunks[8:]
     dataframe: DataFrame = pd.DataFrame()
-    for chunk in progressbar.progressbar(skipped_list, prefix="Downloading history data " + companies[0]):
-        #try:
-            new_data: DataFrame = download_historic_from(companies, chunk)
-            clean_dataframe = cleaning_history(new_data)
-            if dataframe.empty:
-                dataframe = clean_dataframe
-            else:
-                dataframe = dataframe.join(clean_dataframe, validate='one_to_one')
-        #except Exception as e:
-        #    print(e)
+    for chunk in progressbar.progressbar(chunks, prefix="Downloading history data " + companies[0]):
+        new_data: DataFrame = download_historic_from(companies, chunk)
+        clean_dataframe = cleaning_history(new_data)
+        if dataframe.empty:
+            dataframe = clean_dataframe
+        else:
+            dataframe = dataframe.join(clean_dataframe, validate='one_to_one')
     dataframe.to_csv("../data/datasets/historic/companies-from-" + companies[0] + ".csv", index=False)
     return dataframe
 

@@ -14,7 +14,7 @@ PARAMS: dict = {
     "Frq": "CY"  # Yearly frequency
 }
 SKIP: int = 700
-CHUNK_SIZE: int = 100
+CHUNK_SIZE: int = 200
 CHUNK_LIMIT: int | None = None
 
 
