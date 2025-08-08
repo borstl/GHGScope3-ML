@@ -22,21 +22,15 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 logger = logging.getLogger(__name__)
 
 
-def parallel_download(threads: int):
-    """Downloading frames from LSEG database concurrently"""
-    with ThreadPoolExecutor(max_workers=threads) as executor:
-        executor.map(download_all_frames, params.companies)
-
-
-def download_all_frames(companies: list[str]):
+def download_all_frames(companies: list[str], max_workers: int):
     """Downloading all frames from LSEG database"""
     companies_chunks: list[list[str]] = split_in_chunks(companies, 10, skipped_chunks=None)
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         static_result = executor.map(download_all_static_chunks, companies_chunks)
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         historic_result = executor.map(download_all_historic_chunks, companies_chunks)
-    #company_dataframe: DataFrame = join_static_and_historic(static_result, historic_result)
-    #company_dataframe.to_csv(parameters.SAFE_DATA_PATH + "frame.csv")
+    # company_dataframe: DataFrame = join_static_and_historic(static_result, historic_result)
+    # company_dataframe.to_csv(parameters.SAFE_DATA_PATH + "frame.csv")
     print("done")
 
 
@@ -51,7 +45,7 @@ def bundle(incoming: DataFrame, starter: DataFrame) -> DataFrame:
 
 def split_in_chunks(
         field_list: list[str],
-        chunk_size: int = parameters.CHUNK_SIZE,
+        chunk_size: int = 1,
         chunk_limit: int | None = parameters.CHUNK_LIMIT,
         skipped_chunks: int | None = parameters.SKIP_CHUNKS,
 ) -> list[list]:
@@ -70,34 +64,51 @@ def split_in_chunks(
 
 def download_all_static_chunks(companies: list[str]) -> DataFrame:
     """Downloading all static fields from a list of companies"""
-    chunks: list[list] = split_in_chunks(params.static_fields)
+    chunks: list[list] = split_in_chunks(params.static_fields, parameters.CHUNK_SIZE_STATIC)
     dataframe: DataFrame = download_static_from(companies, chunks[0])
     company_index: int = 1
     for chunk in pb.progressbar(chunks[1:], prefix="Downloading static data " + companies[company_index]):
-        new_data: DataFrame = download_static_from(companies, chunk)
-        clean_dataframe = group_static(new_data)
-        dataframe = dataframe.merge(clean_dataframe, how="left")
-        company_index += 1
+        try:
+            new_data: DataFrame = download_static_from(companies, chunk)
+            clean_dataframe = group_static(new_data)
+            dataframe = dataframe.merge(clean_dataframe, how="left")
+            company_index += 1
+        except LDError:
+            company_index += 1
     dataframe.to_csv("../data/datasets/static/companies-from-" + companies[0] + ".csv", index=False)
     return dataframe
 
 
 def download_static_from(companies: list[str], chunk: list[str]) -> DataFrame:
     """Downloading static fields from a list of companies"""
-    return ld.get_data(universe=companies, fields=chunk, header_type=HeaderType.NAME)
+    tries: int = 10
+    delay: int = 1
+    backoff: int = 2
+
+    for _ in range(tries):
+        try:
+            return ld.get_data(universe=companies, fields=chunk, header_type=HeaderType.NAME)
+        except LDError:
+            time.sleep(delay)
+            delay *= backoff
+    logger.warning("Couldn't download static data for companies: %s and chunks: %s", companies, chunk),
+    raise ConnectionError(f"Connection failed for {companies} companies")
 
 
 def download_all_historic_chunks(companies: list[str]) -> DataFrame:
     """Downloading all fields from a company and join them together"""
-    chunks: list[list] = split_in_chunks(params.historic_fields)
+    chunks: list[list] = split_in_chunks(params.historic_fields, parameters.CHUNK_SIZE_HISTORIC)
     df: DataFrame = download_historic_from(companies, chunks[0])
     df = cleaning_history(df)
     company_index: int = 1
     for chunk in pb.progressbar(chunks[1:], prefix="Downloading history data " + companies[company_index]):
-        new_data: DataFrame = download_historic_from(companies, chunk)
-        clean_dataframe = cleaning_history(new_data)
-        df = df.join(clean_dataframe, validate='one_to_one')
-        company_index += 1
+        try:
+            new_data: DataFrame = download_historic_from(companies, chunk)
+            clean_dataframe = cleaning_history(new_data)
+            df = df.join(clean_dataframe, validate='one_to_one')
+            company_index += 1
+        except LDError:
+            company_index += 1
     df.to_csv(
         f"../data/datasets/historic/companies-from-{companies[0]}.csv",
         index=False
@@ -105,7 +116,7 @@ def download_all_historic_chunks(companies: list[str]) -> DataFrame:
     return df
 
 
-def download_historic_from(companies: list[str], fields: list[str]) -> DataFrame:
+def download_historic_from(companies: list[str], chunk: list[str]) -> DataFrame:
     """Downloading content of with time series fields from a company"""
     tries: int = 10
     delay: int = 1
@@ -115,7 +126,7 @@ def download_historic_from(companies: list[str], fields: list[str]) -> DataFrame
         try:
             return ld.get_history(
                 universe=companies,
-                fields=fields,
+                fields=chunk,
                 parameters=parameters.PARAMS,
                 header_type=HeaderType.NAME,
             )
@@ -123,6 +134,7 @@ def download_historic_from(companies: list[str], fields: list[str]) -> DataFrame
             time.sleep(delay)
             delay *= backoff
             print(f"Connection {n}/{tries} failed. Retrying in {delay} seconds. {e}")
+    logger.warning("Couldn't download historic data for companies: %s and chunks: %s", companies, chunk),
     raise ConnectionError(f"Connection failed for {companies} companies")
 
 
@@ -162,5 +174,5 @@ if __name__ == "__main__":
     params = Parameter()
     ld.open_session()
     # parallel_download(1)
-    download_all_frames(params.companies)
+    download_all_frames(params.companies, 10)
     ld.close_session()
