@@ -1,12 +1,14 @@
 """
 functions to download content from the LSEG database
 """
+import time
 import warnings
-
 import lseg.data as ld
 import pandas as pd
-import progressbar
+import progressbar as pb
+from lseg.data._errors import LDError
 import parameters
+import logging
 
 from concurrent.futures import ThreadPoolExecutor
 from lseg.data import HeaderType
@@ -17,6 +19,8 @@ from functions.parameters import Parameter
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+logger = logging.getLogger(__name__)
+
 
 def parallel_download(threads: int):
     """Downloading frames from LSEG database concurrently"""
@@ -26,14 +30,13 @@ def parallel_download(threads: int):
 
 def download_all_frames(companies: list[str]):
     """Downloading all frames from LSEG database"""
-    companies_chunks: list[list[str]] = split_in_chunks(companies, 10)
-    # with ThreadPoolExecutor(max_workers=10) as executor:
-    #    static_result = executor.map(download_all_static_chunks, companies_chunks)
-    # with ThreadPoolExecutor(max_workers=1) as executor:
-    #    historic_result = executor.map(download_all_historic_chunks, companies_chunks)
-    download_all_historic_chunks(companies_chunks[0])
-    # company_dataframe: DataFrame = join_static_and_historic(static, historic)
-    # company_dataframe.to_csv(parameters.SAFE_DATA_PATH + "frame.csv")
+    companies_chunks: list[list[str]] = split_in_chunks(companies, 10, skipped_chunks=None)
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        static_result = executor.map(download_all_static_chunks, companies_chunks)
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        historic_result = executor.map(download_all_historic_chunks, companies_chunks)
+    #company_dataframe: DataFrame = join_static_and_historic(static_result, historic_result)
+    #company_dataframe.to_csv(parameters.SAFE_DATA_PATH + "frame.csv")
     print("done")
 
 
@@ -67,61 +70,60 @@ def split_in_chunks(
 
 def download_all_static_chunks(companies: list[str]) -> DataFrame:
     """Downloading all static fields from a list of companies"""
-    chunks: list[list] = split_in_chunks(
-        params.static_fields,
-        parameters.CHUNK_SIZE,
-        parameters.CHUNK_LIMIT
-    )
-    dataframe: DataFrame = pd.DataFrame()
-
-    for chunk in progressbar.progressbar(chunks, prefix="Downloading static data " + companies[0]):
-        # try:
-        new_data: DataFrame = ld.get_data(
-            universe=companies,
-            fields=chunk,
-            header_type=HeaderType.NAME,
-        )
+    chunks: list[list] = split_in_chunks(params.static_fields)
+    dataframe: DataFrame = download_static_from(companies, chunks[0])
+    company_index: int = 1
+    for chunk in pb.progressbar(chunks[1:], prefix="Downloading static data " + companies[company_index]):
+        new_data: DataFrame = download_static_from(companies, chunk)
         clean_dataframe = group_static(new_data)
-        if dataframe.empty:
-            dataframe = clean_dataframe
-        else:
-            dataframe = dataframe.merge(clean_dataframe, how="left")
-    # except Exception as e:
-    #    print(e)
+        dataframe = dataframe.merge(clean_dataframe, how="left")
+        company_index += 1
     dataframe.to_csv("../data/datasets/static/companies-from-" + companies[0] + ".csv", index=False)
     return dataframe
 
 
+def download_static_from(companies: list[str], chunk: list[str]) -> DataFrame:
+    """Downloading static fields from a list of companies"""
+    return ld.get_data(universe=companies, fields=chunk, header_type=HeaderType.NAME)
+
+
 def download_all_historic_chunks(companies: list[str]) -> DataFrame:
     """Downloading all fields from a company and join them together"""
-    chunks: list[list] = split_in_chunks(
-        params.historic_fields,
-        parameters.CHUNK_SIZE,
-        parameters.CHUNK_LIMIT
-    )
-    dataframe: DataFrame = pd.DataFrame()
-    for chunk in progressbar.progressbar(chunks, prefix="Downloading history data " + companies[0]):
+    chunks: list[list] = split_in_chunks(params.historic_fields)
+    df: DataFrame = download_historic_from(companies, chunks[0])
+    df = cleaning_history(df)
+    company_index: int = 1
+    for chunk in pb.progressbar(chunks[1:], prefix="Downloading history data " + companies[company_index]):
         new_data: DataFrame = download_historic_from(companies, chunk)
         clean_dataframe = cleaning_history(new_data)
-        if dataframe.empty:
-            dataframe = clean_dataframe
-        else:
-            dataframe = dataframe.join(clean_dataframe, validate='one_to_one')
-    dataframe.to_csv("../data/datasets/historic/companies-from-" + companies[0] + ".csv", index=False)
-    return dataframe
+        df = df.join(clean_dataframe, validate='one_to_one')
+        company_index += 1
+    df.to_csv(
+        f"../data/datasets/historic/companies-from-{companies[0]}.csv",
+        index=False
+    )
+    return df
 
 
 def download_historic_from(companies: list[str], fields: list[str]) -> DataFrame:
     """Downloading content of with time series fields from a company"""
-    return ld.get_history(
-        universe=companies,
-        fields=fields,
-        # interval="yearly",
-        # start="2010-01-01",
-        # end="2024-12-31",
-        parameters=parameters.PARAMS,
-        header_type=HeaderType.NAME,
-    )
+    tries: int = 10
+    delay: int = 1
+    backoff: int = 2
+
+    for n in range(tries):
+        try:
+            return ld.get_history(
+                universe=companies,
+                fields=fields,
+                parameters=parameters.PARAMS,
+                header_type=HeaderType.NAME,
+            )
+        except LDError as e:
+            time.sleep(delay)
+            delay *= backoff
+            print(f"Connection {n}/{tries} failed. Retrying in {delay} seconds. {e}")
+    raise ConnectionError(f"Connection failed for {companies} companies")
 
 
 def get_empty_columns_names(csv):
@@ -152,10 +154,11 @@ def configure_lseg():
     config.set_param("logs.transports.console.enabled", True)
     config.set_param("logs.level", "debug")
     config.set_param("logs.transports.file.name", "lseg-data-lib.log")
-    config.set_param("http.request-timeout", 600_000)
+    config.set_param("http.request-timeout", 60_000)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     params = Parameter()
     ld.open_session()
     # parallel_download(1)

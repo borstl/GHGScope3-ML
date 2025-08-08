@@ -5,6 +5,10 @@ Collection of functions to analyse the data
 import matplotlib.pyplot as plt
 import pandas as pd
 
+INPUT_FILE = "../data/parameter/limited_time_series_features.txt"
+REMOVE_FILE = "../data/parameter/removed_time_series_features.txt"
+OUTPUT_FILE = "../data/parameter/limited_time_series_features-removed.txt"
+
 
 def plot_gics_sectors():
     """plot the counts of GICS sectors"""
@@ -51,5 +55,20 @@ def plot_gics_industries():
     plt.show()
 
 
+def remove_failed_features_from_list():
+    """remove failed features from list and write new file"""
+    with open(INPUT_FILE, "r", encoding="utf-8") as f1:
+        file_lines = set(line.rstrip() for line in f1)
+
+    with open(REMOVE_FILE, "r", encoding="utf-8") as f2:
+        remove_lines = set(line.rstrip() for line in f2)
+
+    filtered_lines = [line for line in file_lines if line not in remove_lines]
+
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f3:
+        for line in filtered_lines:
+            f3.write(line + "\n")
+
+
 if __name__ == "__main__":
-    plot_gics_sectors()
+    remove_failed_features_from_list()

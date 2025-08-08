@@ -1,8 +1,8 @@
 """Collection of global parameters"""
 
 COMPANIES_PATH: str = "../data/parameter/company.txt"
-STATIC_FIELDS_PATH: str = "../data/parameter/tr_values_static.txt"
-HISTORIC_FIELDS_PATH: str = "../data/parameter/tr_values_history.txt"
+STATIC_FIELDS_PATH: str = "../data/parameter/limited_static_features.txt"
+HISTORIC_FIELDS_PATH: str = "../data/parameter/limited_time_series_features.txt"
 SAFE_DATA_PATH: str = "../data/datasets/companies/"
 companies: list[str]
 static_fields: list[str]
@@ -14,7 +14,7 @@ PARAMS: dict = {
     "Frq": "CY"  # Yearly frequency
 }
 SKIP_CHUNKS: int | None = None
-CHUNK_SIZE: int = 100
+CHUNK_SIZE: int = 1
 CHUNK_LIMIT: int | None = None
 
 
