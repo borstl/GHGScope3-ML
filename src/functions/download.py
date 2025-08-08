@@ -170,9 +170,13 @@ def configure_lseg():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    logging.basicConfig(
+        filename="../data/download.log",
+        encoding="utf-8",
+        level=logging.WARNING,
+        format="%(message)s"
+    )
     params = Parameter()
     ld.open_session()
-    # parallel_download(1)
     download_all_frames(params.companies, 10)
     ld.close_session()
