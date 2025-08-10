@@ -1,14 +1,14 @@
 """
 functions to download content from the LSEG database
 """
+import logging
 import time
 import warnings
+import parameters
 import lseg.data as ld
 import pandas as pd
 import progressbar as pb
 from lseg.data._errors import LDError
-import parameters
-import logging
 
 from concurrent.futures import ThreadPoolExecutor
 from lseg.data import HeaderType
@@ -25,10 +25,11 @@ logger = logging.getLogger(__name__)
 def download_all_frames(companies: list[str], max_workers: int):
     """Downloading all frames from LSEG database"""
     companies_chunks: list[list[str]] = split_in_chunks(companies, 10, skipped_chunks=None)
+    #download_all_static_chunks(companies_chunks[0])
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         static_result = executor.map(download_all_static_chunks, companies_chunks)
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        historic_result = executor.map(download_all_historic_chunks, companies_chunks)
+    #with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        #historic_result = executor.map(download_all_historic_chunks, companies_chunks)
     # company_dataframe: DataFrame = join_static_and_historic(static_result, historic_result)
     # company_dataframe.to_csv(parameters.SAFE_DATA_PATH + "frame.csv")
     print("done")
@@ -65,18 +66,19 @@ def split_in_chunks(
 def download_all_static_chunks(companies: list[str]) -> DataFrame:
     """Downloading all static fields from a list of companies"""
     chunks: list[list] = split_in_chunks(params.static_fields, parameters.CHUNK_SIZE_STATIC)
-    dataframe: DataFrame = download_static_from(companies, chunks[0])
+    df: DataFrame = download_static_from(companies, chunks[0])
+    df = group_static(df)
     company_index: int = 1
     for chunk in pb.progressbar(chunks[1:], prefix="Downloading static data " + companies[company_index]):
         try:
             new_data: DataFrame = download_static_from(companies, chunk)
-            clean_dataframe = group_static(new_data)
-            dataframe = dataframe.merge(clean_dataframe, how="left")
+            clean_df: DataFrame = group_static(new_data)
+            df = df.merge(clean_df, how="left")
             company_index += 1
         except LDError:
             company_index += 1
-    dataframe.to_csv("../data/datasets/static/companies-from-" + companies[0] + ".csv", index=False)
-    return dataframe
+    df.to_csv(f"../data/datasets/static/companies-{companies[0]}.csv", index=False)
+    return df
 
 
 def download_static_from(companies: list[str], chunk: list[str]) -> DataFrame:
@@ -91,7 +93,7 @@ def download_static_from(companies: list[str], chunk: list[str]) -> DataFrame:
         except LDError:
             time.sleep(delay)
             delay *= backoff
-    logger.warning("Couldn't download static data for companies: %s and chunks: %s", companies, chunk),
+    logger.info("Couldn't download static data for companies: %s and chunks: %s", companies, chunk),
     raise ConnectionError(f"Connection failed for {companies} companies")
 
 
@@ -109,10 +111,7 @@ def download_all_historic_chunks(companies: list[str]) -> DataFrame:
             company_index += 1
         except LDError:
             company_index += 1
-    df.to_csv(
-        f"../data/datasets/historic/companies-from-{companies[0]}.csv",
-        index=False
-    )
+    df.to_csv(f"../data/datasets/historic/companies-{companies[0]}.csv", index=False)
     return df
 
 
@@ -134,7 +133,7 @@ def download_historic_from(companies: list[str], chunk: list[str]) -> DataFrame:
             time.sleep(delay)
             delay *= backoff
             print(f"Connection {n}/{tries} failed. Retrying in {delay} seconds. {e}")
-    logger.warning("Couldn't download historic data for companies: %s and chunks: %s", companies, chunk),
+    logger.info("Couldn't download historic data for companies: %s and chunks: %s", companies, chunk),
     raise ConnectionError(f"Connection failed for {companies} companies")
 
 
@@ -163,9 +162,9 @@ def download_gics_codes():
 def configure_lseg():
     """Configure LSEG"""
     config = ld.get_config()
-    config.set_param("logs.transports.console.enabled", True)
-    config.set_param("logs.level", "debug")
-    config.set_param("logs.transports.file.name", "lseg-data-lib.log")
+    #config.set_param("logs.transports.console.enabled", True)
+    #config.set_param("logs.level", "debug")
+    #config.set_param("logs.transports.file.name", "lseg-data-lib.log")
     config.set_param("http.request-timeout", 60_000)
 
 
@@ -173,9 +172,10 @@ if __name__ == "__main__":
     logging.basicConfig(
         filename="../data/download.log",
         encoding="utf-8",
-        level=logging.WARNING,
+        level=logging.INFO,
         format="%(message)s"
     )
+    configure_lseg()
     params = Parameter()
     ld.open_session()
     download_all_frames(params.companies, 10)

@@ -8,8 +8,8 @@ from pandas import DataFrame, PeriodIndex
 
 CSV_COMPANY_1_PATH: str = "../data/datasets/Example/CompanyA/DataFrame-Static-Example-Company-A-First-Half.csv"
 CSV_COMPANY_2_PATH: str = "../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv"
-SINCE: datetime = datetime.date(2010, 1, 1)
-TILL: datetime = datetime.date(2024, 12, 31)
+SINCE: datetime.date = datetime.date(2010, 1, 1)
+TILL: datetime.date = datetime.date(2024, 12, 31)
 
 
 def join_static_and_historic(static: DataFrame, historic: DataFrame) -> DataFrame:
@@ -18,11 +18,16 @@ def join_static_and_historic(static: DataFrame, historic: DataFrame) -> DataFram
     return historic.join(blown_up_static, how='left', validate='one_to_one')
 
 
-def blow_up(df: DataFrame, since: datetime, till: datetime) -> DataFrame:
+def blow_up(df: DataFrame, since: datetime.date, till: datetime.date) -> DataFrame:
     """
     Duplicate rows in static dataframe until it has the sice of
     historic dataframes (e.g. row 2010-2024)
     """
+    # TODO rewrite so multiple companies in one frame can be blown up independently
+    grouped: DataFrame = (df
+                          .groupby(['Instruments'])
+                          .agg(lambda company: pd.concat([company, company.iloc[[0]]]))
+                          )
     for _ in range(int(since.year), int(till.year)):
         df = pd.concat([df, df.iloc[[0]]], ignore_index=True)
     period: PeriodIndex = pd.period_range(start=since, end=till, freq='Y')

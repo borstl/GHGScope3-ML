@@ -1,9 +1,8 @@
 """
 Collection of functions to help clean dataframes
 """
-import datetime
 from datetime import datetime
-
+import logging
 import pandas as pd
 import numpy as np
 from pandas import Series, DataFrame
@@ -58,17 +57,17 @@ def handle_duplicated_rows(df: DataFrame) -> DataFrame:
     return cleaned.sort_index()
 
 
-def remove_empty_columns(dataframe: DataFrame) -> DataFrame:
+def remove_empty_columns(df: DataFrame) -> DataFrame:
     """Remove empty columns"""
-    replaced: DataFrame = dataframe.replace("", np.nan)
+    replaced: DataFrame = df.replace("", np.nan)
     return replaced.dropna(how='all', axis=1, inplace=False)
 
 
-def aggregate_years(dataframe: DataFrame) -> DataFrame:
+def aggregate_years(df: DataFrame) -> DataFrame:
     """Historic data have their row id as date, we want them as a clear year"""
-    dataframe.index = pd.to_datetime(dataframe.index)
+    df.index = pd.to_datetime(df.index)
     return (
-        dataframe[dataframe.index.to_series().between(SINCE, TILL)]
+        df[df.index.to_series().between(SINCE, TILL)]
         .resample('YE')
         .agg(lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA)
     )
@@ -80,6 +79,7 @@ def fill_range_of_years(df: DataFrame) -> DataFrame:
         index=pd.period_range(start=SINCE, end=TILL, freq='Y', name='Date'),
     )
     return df.reindex(index=structure.index)
+
 
 def cleaning_history(df: DataFrame) -> DataFrame:
     """Coupling the different functions into one function"""
@@ -101,8 +101,7 @@ def aggregate_static(df: DataFrame) -> DataFrame:
 
 def group_static(df: DataFrame) -> DataFrame:
     """Split all static rows by instruments"""
-    print("Grouping static rows by instruments")
-    grouped: DataFrame = (
+    return (
         df
         .groupby("Instrument")
         .agg(
@@ -110,6 +109,9 @@ def group_static(df: DataFrame) -> DataFrame:
         )
         .reset_index()
     )
+
+def clean_static(df: DataFrame) -> DataFrame:
+    grouped: DataFrame = group_static(df)
     return remove_empty_columns(grouped)
 
 
