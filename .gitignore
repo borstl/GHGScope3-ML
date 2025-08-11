@@ -1,6 +1,7 @@
 /data/datasets/
 /data/html/
 /data/features/
+/data/figures
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
