@@ -4,13 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-# pandas = "~=2.2.3"
 pandas = "*"
-# datetime = "~=5.5"
-# beautifulsoup4 = "~=4.13.4"
-# matplotlib = "~=3.10.1"
 matplotlib = "*"
 lseg-data = "*"
+click = "*"
 
 [dev-packages]
 

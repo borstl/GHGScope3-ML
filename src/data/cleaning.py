@@ -2,12 +2,10 @@
 Collection of functions to help clean dataframes
 """
 from datetime import datetime
-import logging
 import pandas as pd
 import numpy as np
-from pandas import Series, DataFrame
+from pandas import Series, DataFrame, PeriodIndex
 
-EXAMPLE_CSV_PATH: str = "../data/datasets/Example/CompanyA/DataFrame-Historic-Example-Company-A-First-Half.csv"
 SINCE: datetime = datetime(2010, 1, 1)
 TILL: datetime = datetime(2024, 12, 31)
 
@@ -111,10 +109,38 @@ def group_static(df: DataFrame) -> DataFrame:
     )
 
 def clean_static(df: DataFrame) -> DataFrame:
+    """clean static rows"""
     grouped: DataFrame = group_static(df)
     return remove_empty_columns(grouped)
 
 
-if __name__ == "__main__":
-    data = pd.read_csv(EXAMPLE_CSV_PATH, index_col="Date")
-    modeled_dataframe = cleaning_history(data)
+def join_static_and_historic(static: DataFrame, historic: DataFrame) -> DataFrame:
+    """Merge static and historic data into one dataframe"""
+    blown_up_static: DataFrame = blow_up(static, SINCE, TILL)
+    return historic.join(blown_up_static, how='left', validate='one_to_one')
+
+
+def blow_up(df: DataFrame, since: datetime, till: datetime) -> DataFrame:
+    """
+    Duplicate rows in static dataframe until it has the sice of
+    historic dataframes (e.g. row 2010-2024)
+    """
+    # TODO rewrite so multiple companies in one frame can be blown up independently
+    grouped: DataFrame = (df
+                          .groupby(['Instruments'])
+                          .agg(lambda company: pd.concat([company, company.iloc[[0]]]))
+                          )
+    for _ in range(int(since.year), int(till.year)):
+        df = pd.concat([df, df.iloc[[0]]], ignore_index=True)
+    period: PeriodIndex = pd.period_range(start=since, end=till, freq='Y')
+    df.set_index(period, inplace=True)
+    df.index.name = "Date"
+    return df
+
+
+def concat_companies(df: DataFrame, new_data: DataFrame) -> DataFrame:
+    """Merge new data into one dataframe"""
+    dates: DataFrame = pd.DataFrame(new_data.index.to_series(), columns=['Date'])
+    new_data.insert(0, 'Date', dates)
+    df = pd.concat([df, new_data], ignore_index=True, sort=False)
+    return df

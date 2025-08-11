@@ -1,6 +1,6 @@
-/src/data/datasets/
-/src/data/html/
-/src/data/parameter/
+/data/datasets/
+/data/html/
+/data/features/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
