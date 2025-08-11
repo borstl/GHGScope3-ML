@@ -120,16 +120,14 @@ class LSEGDataDownloader:
 
     def download_static_from(self, companies: list[str], chunk: list[str]) -> DataFrame:
         """Downloading static fields from a list of companies"""
-        tries: int = 10
-        delay: int = 1
-        backoff: int = 2
+        delay = self.config.retry_delay
 
-        for _ in range(tries):
+        for _ in range(self.config.max_retries):
             try:
                 return ld.get_data(universe=companies, fields=chunk, header_type=HeaderType.NAME)
             except DataDownloadError:
                 time.sleep(delay)
-                delay *= backoff
+                delay *= self.config.retry_backoff_multiplier
         self.logger.info(
             "Couldn't download static data for companies: %s and chunks: %s",
             companies, chunk
@@ -161,6 +159,8 @@ class LSEGDataDownloader:
 
     def download_historic_from(self, companies: list[str], chunk: list[str]) -> DataFrame:
         """Downloading content of with time series fields from a company"""
+        delay = self.config.retry_delay
+
         for n in range(self.config.max_retries):
             try:
                 return ld.get_history(
@@ -170,8 +170,8 @@ class LSEGDataDownloader:
                     header_type=HeaderType.NAME,
                 )
             except DataDownloadError as e:
-                time.sleep(self.config.retry_delay)
-                self.config.retry_delay *= self.config.retry_backoff_multiplier
+                time.sleep(delay)
+                delay *= self.config.retry_backoff_multiplier
                 print(f"Connection {n}/{self.config.max_retries} failed."
                       f"Retrying in {self.config.retry_delay} seconds. {e}"
                       )
