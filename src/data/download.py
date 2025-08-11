@@ -12,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 import lseg.data as ld
 from lseg.data import HeaderType
+from lseg.data._errors import LDError
 from pandas import DataFrame
 
 from core import Config
@@ -59,13 +60,23 @@ def bundle(starter: DataFrame, incoming: DataFrame) -> DataFrame:
 class LSEGDataDownloader:
     """Downloading Data from LSEG API"""
     config: Config = None
-    logger: logging.Logger = None
+    _logger: logging.Logger = None
     session_open: bool = False
 
     def __init__(self, config: Config):
         self.config = config
-        self.logger = logging.getLogger(__name__)
         self.session_open = False
+
+    @property
+    def logger(self):
+        """Returns logger"""
+        if self._logger is None:
+            self._logger = logging.getLogger()
+        return self._logger
+
+    @logger.setter
+    def logger(self, value):
+        self._logger = value
 
     def __enter__(self) -> "LSEGDataDownloader":
         self.open_session()
@@ -86,6 +97,7 @@ class LSEGDataDownloader:
 
     def download_all_frames(self) -> None:
         """Downloading all frames from LSEG database"""
+        self.logger.info("Downloading all frames from LSEG database")
         companies_chunks: list[list[str]] = split_in_chunks(
             self.config.companies,
             self.config.companies_chunk_size
@@ -94,6 +106,7 @@ class LSEGDataDownloader:
             executor.map(self.download_all_static_chunks, companies_chunks)
         with ThreadPoolExecutor(self.config.max_workers) as executor:
             executor.map(self.download_all_historic_chunks, companies_chunks)
+        executor.shutdown(wait=True)
 
     def download_all_static_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all static fields from a list of companies"""
@@ -125,14 +138,18 @@ class LSEGDataDownloader:
         for _ in range(self.config.max_retries):
             try:
                 return ld.get_data(universe=companies, fields=chunk, header_type=HeaderType.NAME)
-            except DataDownloadError:
+            except LDError:
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
         self.logger.info(
             "Couldn't download static data for companies: %s and chunks: %s",
             companies, chunk
         )
-        raise ConnectionError(f"Connection failed for {companies} companies")
+        raise DataDownloadError(
+            f"Connection failed for {companies} companies and chunks {chunk}",
+            companies,
+            chunk
+        )
 
     def download_all_historic_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all fields from a company and join them together"""
@@ -161,7 +178,7 @@ class LSEGDataDownloader:
         """Downloading content of with time series fields from a company"""
         delay = self.config.retry_delay
 
-        for n in range(self.config.max_retries):
+        for _ in range(self.config.max_retries):
             try:
                 return ld.get_history(
                     universe=companies,
@@ -169,17 +186,18 @@ class LSEGDataDownloader:
                     parameters=self.config.params,
                     header_type=HeaderType.NAME,
                 )
-            except DataDownloadError as e:
+            except LDError:
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
-                print(f"Connection {n}/{self.config.max_retries} failed."
-                      f"Retrying in {self.config.retry_delay} seconds. {e}"
-                      )
         self.logger.info(
             "Couldn't download historic data for companies: %s and chunks: %s",
             companies, chunk
         )
-        raise ConnectionError(f"Connection failed for {companies} companies")
+        raise DataDownloadError(
+            f"Connection failed for {companies} companies and chunks {chunk}",
+            companies,
+            chunk
+        )
 
     def download_gics_codes(self):
         """Downloading the GICS sector codes of all companies"""

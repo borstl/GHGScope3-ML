@@ -7,6 +7,10 @@ class MLProjectError(Exception):
 
 class DataDownloadError(MLProjectError):
     """Raised when data download fails"""
+    def __init__(self, message: str, companies: list = None, features: list = None):
+        self.companies = companies
+        self.features = features
+        super().__init__(message)
 
 
 class DataValidationError(MLProjectError):

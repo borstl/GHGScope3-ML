@@ -1,11 +1,12 @@
 """Config Class"""
 
-
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 
 import lseg.data as ld
+
+from core.exceptions import ConfigurationError
 
 
 @dataclass
@@ -35,15 +36,13 @@ class Config:
     # config.set_param("logs.transports.file.name", "lseg-data-lib.log")
     lseg_api_configurator.set_param("http.request-timeout", 60_000)
 
-
     # Date ranges
     start_date: str = "2010-01-01"
     end_date: str = "2024-12-31"
 
     # Logging
     log_level: str = "INFO"
-    log_file: Optional[Path] = None
-
+    log_file: Optional[Path] = project_root / "logs" / "download.log"
     # Features
     companies: list[str] = field(default_factory=list)
     static_features: list[str] = field(default_factory=list)
@@ -56,25 +55,14 @@ class Config:
             "Period": "FY0",
             "Frq": "CY"  # Yearly frequency
         }
-        
+
         # Safely load feature files if they exist
         try:
             with open(self.companies_file, encoding="utf-8") as f:
                 self.companies = [line.strip() for line in f if line.strip()]
-        except FileNotFoundError:
-            self.companies = []
-            print(f"Warning: Companies file not found: {self.companies_file}")
-            
-        try:
             with open(self.static_features_file, encoding="utf-8") as f:
                 self.static_features = [line.strip() for line in f if line.strip()]
-        except FileNotFoundError:
-            self.static_features = []
-            print(f"Warning: Static features file not found: {self.static_features_file}")
-            
-        try:
             with open(self.historic_features_file, encoding="utf-8") as f:
                 self.historic_features = [line.strip() for line in f if line.strip()]
-        except FileNotFoundError:
-            self.historic_features = []
-            print(f"Warning: Historic features file not found: {self.historic_features_file}")
+        except FileNotFoundError as exc:
+            raise ConfigurationError("Required file not found") from exc
