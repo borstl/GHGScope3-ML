@@ -68,14 +68,14 @@ class LSEGDataDownloader:
         self.session_open = False
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         """Returns logger"""
         if self._logger is None:
             self._logger = logging.getLogger()
         return self._logger
 
     @logger.setter
-    def logger(self, value):
+    def logger(self, value) -> None:
         self._logger = value
 
     def __enter__(self) -> "LSEGDataDownloader":
@@ -106,7 +106,6 @@ class LSEGDataDownloader:
             executor.map(self.download_all_static_chunks, companies_chunks)
         with ThreadPoolExecutor(self.config.max_workers) as executor:
             executor.map(self.download_all_historic_chunks, companies_chunks)
-        executor.shutdown(wait=True)
 
     def download_all_static_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all static fields from a list of companies"""
@@ -118,6 +117,9 @@ class LSEGDataDownloader:
         df = group_static(df)
         company_index: int = 1
         for chunk in chunks[1:]:
+            self.logger.info(
+                f"Static download: Companies {companies[0]} - {companies[-1]}: Chunk {company_index}: {len(chunk)}"
+            )
             try:
                 new_data: DataFrame = self.download_static_from(companies, chunk)
                 clean_df: DataFrame = group_static(new_data)
@@ -162,6 +164,9 @@ class LSEGDataDownloader:
         company_index: int = 1
         for chunk in chunks[1:]:
             try:
+                self.logger.info(
+                    f"History download: Companies {companies[0]} - {companies[-1]}: Chunk {company_index}: {len(chunk)}"
+                )
                 new_data: DataFrame = self.download_historic_from(companies, chunk)
                 clean_dataframe = cleaning_history(new_data)
                 df = df.join(clean_dataframe, validate='one_to_one')
