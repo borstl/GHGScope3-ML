@@ -5,6 +5,7 @@ This module handles downloading financial and ESG data from the LSEG database.
 It includes retry logic, chunking for large datasets, and error handling.
 """
 import logging
+import pathlib
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
@@ -17,42 +18,24 @@ from pandas import DataFrame
 
 from core import Config
 from core.exceptions import DataDownloadError
-from .cleaning import cleaning_history, concat_companies, group_static
+from .cleaning import cleaning_history, concat_companies, aggregate_static, \
+    remove_empty_columns, join
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def split_in_chunks(
-        field_list: list[str],
-        chunk_size: int,
-        chunk_limit: int = 0,
-        skipped_chunks: int = 0
-) -> list[list]:
-    """Splitting a list in chunks of e.g. 1000 items"""
-    chunks: list[list] = []
-    for i in range(0, len(field_list), chunk_size):
-        chunks.append(field_list[i: i + chunk_size])
-    if chunk_limit > 0 and skipped_chunks > 0:
-        return chunks[skipped_chunks:chunk_limit]
-    if chunk_limit > 0 >= skipped_chunks:
-        return chunks[:chunk_limit]
-    if chunk_limit <= 0 < skipped_chunks:
-        return chunks[skipped_chunks:]
-    return chunks
-
-
-def get_empty_columns_names(csv):
+def get_empty_columns_names(csv: str | pathlib.Path) -> list[str]:
     """Returns all empty column names from a data frame as a list"""
-    df = pd.read_csv(csv)
-    na_df = df.replace("", pd.NA)
+    df: DataFrame = pd.read_csv(csv)
+    na_df: DataFrame = df.replace("", pd.NA)
     return na_df.columns[df.isna().all()].tolist()
 
 
 def bundle(starter: DataFrame, incoming: DataFrame) -> DataFrame:
     """Concatenate two company dataframes if there is already one filled with data"""
     if starter.empty:
-        date_frame = pd.DataFrame(incoming.index.to_series(), columns=['Date'])
-        incoming.insert(0, 'Date', date_frame)
+        df = pd.DataFrame(incoming.index.to_series(), columns=['Date'])
+        incoming.insert(0, 'Date', df)
         return incoming
     return concat_companies(starter, incoming)
 
@@ -60,7 +43,7 @@ def bundle(starter: DataFrame, incoming: DataFrame) -> DataFrame:
 class LSEGDataDownloader:
     """Downloading Data from LSEG API"""
     config: Config = None
-    _logger: logging.Logger = None
+    _logger: logging.Logger | None = None
     session_open: bool = False
 
     def __init__(self, config: Config):
@@ -98,37 +81,40 @@ class LSEGDataDownloader:
     def download_all_frames(self) -> None:
         """Downloading all frames from LSEG database"""
         self.logger.info("Downloading all frames from LSEG database")
-        companies_chunks: list[list[str]] = split_in_chunks(
-            self.config.companies,
-            self.config.companies_chunk_size
-        )
+        all_static: DataFrame
+        all_historic: DataFrame
         with ThreadPoolExecutor(self.config.max_workers) as executor:
-            executor.map(self.download_all_static_chunks, companies_chunks)
+            static_results = executor.map(
+                self.download_all_static_chunks,
+                self.config.companies_chunks
+            )
+            all_static = pd.concat(static_results, ignore_index=True)
+            all_static.to_csv(self.config.data_dir / "datasets" / "static" / "static.csv")
         with ThreadPoolExecutor(self.config.max_workers) as executor:
-            executor.map(self.download_all_historic_chunks, companies_chunks)
+            historic_results = executor.map(
+                self.download_all_historic_chunks,
+                self.config.companies_chunks
+            )
+            all_historic = pd.concat(historic_results, ignore_index=True)
+            all_historic.to_csv(self.config.data_dir / "datasets" / "historic" / "historic.csv")
+        all_data: DataFrame = join(all_static, all_historic)
+        all_data.to_csv(self.config.data_dir / "datasets" / "all_data.csv")
 
     def download_all_static_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all static fields from a list of companies"""
-        chunks: list[list] = split_in_chunks(
-            self.config.static_features,
-            self.config.chunk_size_static
-        )
-        df: DataFrame = self.download_static_from(companies, chunks[0])
-        df = group_static(df)
-        company_index: int = 1
-        for chunk in chunks[1:]:
-            self.logger.info(
-                f"Static download: Companies {companies[0]} - {companies[-1]}: Chunk {company_index}: {len(chunk)}"
+        df: DataFrame = self.download_static_from(companies, self.config.historic_chunks[0])
+        for i, chunk in enumerate(self.config.historic_chunks[1:]):
+            msg = (
+                f"Static download: {companies[0]}-{companies[-1]}: "
+                f"Chunk{i + 2}:{len(self.config.historic_chunks)}"
             )
-            try:
-                new_data: DataFrame = self.download_static_from(companies, chunk)
-                clean_df: DataFrame = group_static(new_data)
-                df = df.merge(clean_df, how="left")
-                company_index += 1
-            except DataDownloadError:
-                company_index += 1
+            self.logger.info(msg)
+            print(msg)
+            new_data: DataFrame = self.download_static_from(companies, chunk)
+            df = df.join(new_data.set_index('Instrument'), on='Instrument', how="left")
+        df = remove_empty_columns(df)
         df.to_csv(
-            self.config.data_dir / "datasets" / "static" / f"companies-{companies[0]}.csv",
+            self.config.static_dir / f"companies-{companies[0]}-{companies[-1]}.csv",
             index=False
         )
         return df
@@ -136,10 +122,16 @@ class LSEGDataDownloader:
     def download_static_from(self, companies: list[str], chunk: list[str]) -> DataFrame:
         """Downloading static fields from a list of companies"""
         delay = self.config.retry_delay
-
         for _ in range(self.config.max_retries):
             try:
-                return ld.get_data(universe=companies, fields=chunk, header_type=HeaderType.NAME)
+                data: DataFrame = pd.DataFrame(
+                    ld.get_data(
+                        universe=companies,
+                        fields=chunk,
+                        header_type=HeaderType.NAME
+                    )
+                )
+                return aggregate_static(data)
             except LDError:
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
@@ -155,26 +147,18 @@ class LSEGDataDownloader:
 
     def download_all_historic_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all fields from a company and join them together"""
-        chunks: list[list] = split_in_chunks(
-            self.config.historic_features,
-            self.config.chunk_size_historic
-        )
-        df: DataFrame = self.download_historic_from(companies, chunks[0])
-        df = cleaning_history(df)
-        company_index: int = 1
-        for chunk in chunks[1:]:
-            try:
-                self.logger.info(
-                    f"History download: Companies {companies[0]} - {companies[-1]}: Chunk {company_index}: {len(chunk)}"
-                )
-                new_data: DataFrame = self.download_historic_from(companies, chunk)
-                clean_dataframe = cleaning_history(new_data)
-                df = df.join(clean_dataframe, validate='one_to_one')
-                company_index += 1
-            except DataDownloadError:
-                company_index += 1
+        df: DataFrame = self.download_historic_from(companies, self.config.historic_chunks[0])
+        for i, chunk in enumerate(self.config.historic_chunks[1:]):
+            msg = (
+                f"History download: {companies[0]} - {companies[-1]}"
+                f": Chunk {i + 2}:{len(self.config.historic_chunks)}"
+            )
+            self.logger.info(msg)
+            print(msg)
+            new_data: DataFrame = self.download_historic_from(companies, chunk)
+            df = df.join(new_data.set_index('Date'), on='Date', how='left', validate='one_to_one')
         df.to_csv(
-            self.config.data_dir / "datasets" / "historic" / f"companies-{companies[0]}.csv",
+            self.config.historic_dir / f"companies-{companies[0]}-{companies[-1]}.csv",
             index=False
         )
         return df
@@ -182,15 +166,15 @@ class LSEGDataDownloader:
     def download_historic_from(self, companies: list[str], chunk: list[str]) -> DataFrame:
         """Downloading content of with time series fields from a company"""
         delay = self.config.retry_delay
-
         for _ in range(self.config.max_retries):
             try:
-                return ld.get_history(
+                data: DataFrame = ld.get_history(
                     universe=companies,
                     fields=chunk,
                     parameters=self.config.params,
                     header_type=HeaderType.NAME,
                 )
+                return cleaning_history(data)
             except LDError:
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
@@ -204,7 +188,7 @@ class LSEGDataDownloader:
             chunk
         )
 
-    def download_gics_codes(self):
+    def download_gics_codes(self) -> None:
         """Downloading the GICS sector codes of all companies"""
         gics_codes: DataFrame = ld.get_data(
             universe=self.config.companies,

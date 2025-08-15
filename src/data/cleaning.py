@@ -5,6 +5,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from pandas import Series, DataFrame, PeriodIndex
+from pandas.core.groupby import DataFrameGroupBy
 
 SINCE: datetime = datetime(2010, 1, 1)
 TILL: datetime = datetime(2024, 12, 31)
@@ -62,7 +63,7 @@ def remove_empty_columns(df: DataFrame) -> DataFrame:
 
 
 def aggregate_years(df: DataFrame) -> DataFrame:
-    """Historic data have their row id as date, we want them as a clear year"""
+    """Historical data have their row id as date, we want them as a clear year"""
     df.index = pd.to_datetime(df.index)
     return (
         df[df.index.to_series().between(SINCE, TILL)]
@@ -83,6 +84,7 @@ def cleaning_history(df: DataFrame) -> DataFrame:
     """Coupling the different functions into one function"""
     unique: DataFrame = handle_duplicated_rows(df)
     striped: DataFrame = aggregate_years(unique)
+    #TODO: rewrite to support multiple companies in one dataframe
     filled: DataFrame = fill_range_of_years(striped)
     if isinstance(filled.columns, pd.MultiIndex):
         filled.columns = filled.columns.droplevel(0)
@@ -90,16 +92,8 @@ def cleaning_history(df: DataFrame) -> DataFrame:
 
 
 def aggregate_static(df: DataFrame) -> DataFrame:
-    """Aggregate all static rows"""
-    df = remove_empty_columns(df)
-    return df.agg(
-        lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA
-    ).to_frame().transpose()
-
-
-def group_static(df: DataFrame) -> DataFrame:
     """Split all static rows by instruments"""
-    return (
+    return DataFrame(
         df
         .groupby("Instrument")
         .agg(
@@ -108,31 +102,49 @@ def group_static(df: DataFrame) -> DataFrame:
         .reset_index()
     )
 
+
 def clean_static(df: DataFrame) -> DataFrame:
     """clean static rows"""
-    grouped: DataFrame = group_static(df)
+    grouped: DataFrame = aggregate_static(df)
     return remove_empty_columns(grouped)
 
 
 def join_static_and_historic(static: DataFrame, historic: DataFrame) -> DataFrame:
-    """Merge static and historic data into one dataframe"""
-    blown_up_static: DataFrame = blow_up(static, SINCE, TILL)
+    """Merge static and historic data into one dataframe for one company"""
+    blown_up_static: DataFrame = blow_up(static)
     return historic.join(blown_up_static, how='left', validate='one_to_one')
 
 
-def blow_up(df: DataFrame, since: datetime, till: datetime) -> DataFrame:
+def join_all(static: DataFrame, historic: DataFrame) -> DataFrame:
+    """Join static data and historic data into one dataframe for all companies"""
+    stretched: DataFrame = stretch_static(static)
+    return historic.join(stretched, how='left', validate='one_to_one')
+
+
+def duplicate_group(df: DataFrame, times: int) -> DataFrame:
+    """Duplicate a group of rows"""
+    return pd.concat([df] * times, ignore_index=True)
+
+
+def stretch_static(df: DataFrame) -> DataFrame:
+    """All statistical data for each company should be duplicated to the size
+     of the historic data to prepare a one-to-one merge"""
+    return pd.DataFrame(
+        df.groupby('Instrument', group_keys=False).apply(
+            lambda g: duplicate_group(g, (TILL.year - SINCE.year))
+        )
+        .reset_index(drop=True)
+    )
+
+
+def blow_up(df: DataFrame) -> DataFrame:
     """
     Duplicate rows in static dataframe until it has the sice of
     historic dataframes (e.g. row 2010-2024)
     """
-    # TODO rewrite so multiple companies in one frame can be blown up independently
-    grouped: DataFrame = (df
-                          .groupby(['Instruments'])
-                          .agg(lambda company: pd.concat([company, company.iloc[[0]]]))
-                          )
-    for _ in range(int(since.year), int(till.year)):
+    for _ in range(int(SINCE.year), int(TILL.year)):
         df = pd.concat([df, df.iloc[[0]]], ignore_index=True)
-    period: PeriodIndex = pd.period_range(start=since, end=till, freq='Y')
+    period: PeriodIndex = pd.period_range(start=SINCE, end=TILL, freq='Y')
     df.set_index(period, inplace=True)
     df.index.name = "Date"
     return df
@@ -144,3 +156,14 @@ def concat_companies(df: DataFrame, new_data: DataFrame) -> DataFrame:
     new_data.insert(0, 'Date', dates)
     df = pd.concat([df, new_data], ignore_index=True, sort=False)
     return df
+
+
+def join(static: DataFrame, timeseries: DataFrame) -> DataFrame:
+    """Join static and timeseries dataframes"""
+    grouped_static: DataFrameGroupBy = static.groupby('Instrument')
+    grouped_timeseries: DataFrameGroupBy = timeseries.groupby('Instrument')
+    return DataFrame(
+        grouped_static.apply(
+            lambda g: grouped_timeseries.get_group([g.name]).join(g, on='Insturment', how='left')
+        )
+    )

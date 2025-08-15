@@ -3,10 +3,10 @@ Data module for downloading, cleaning, and processing financial data.
 """
 
 from .download import LSEGDataDownloader
-from .cleaning import cleaning_history, group_static
+from .cleaning import cleaning_history, aggregate_static
 
 __all__ = [
     'LSEGDataDownloader',
     "cleaning_history",
-    "group_static"
+    "aggregate_static"
 ]
