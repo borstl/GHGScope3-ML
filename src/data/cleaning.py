@@ -2,23 +2,25 @@
 Collection of functions to help clean dataframes
 """
 from datetime import datetime
+from logging import Logger
+
 import pandas as pd
 import numpy as np
-from pandas import Series, DataFrame, PeriodIndex
+from pandas import Series, PeriodIndex
 from pandas.core.groupby import DataFrameGroupBy
 
 SINCE: datetime = datetime(2010, 1, 1)
 TILL: datetime = datetime(2024, 12, 31)
 
 
-def merge_duplicates(timeseries1: Series, timeseries2: Series) -> DataFrame:
+def merge_duplicates(timeseries1: Series, timeseries2: Series) -> pd.DataFrame:
     """
     Merge two series.
     Takes two time series objects and returns a new time series object.
     Iterating over each column in the time series objects and comparing
     the values according as described below.
     """
-    merged: DataFrame = pd.DataFrame([timeseries1])
+    merged: pd.DataFrame = pd.DataFrame([timeseries1])
     for column in timeseries1.index:
         # TODO: what happens if there are multiple different duplicated indexes in a df?
         # if both values are missing
@@ -41,28 +43,35 @@ def merge_duplicates(timeseries1: Series, timeseries2: Series) -> DataFrame:
     return merged.convert_dtypes()
 
 
-def handle_duplicated_rows(df: DataFrame) -> DataFrame:
+def remove_empty_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove empty columns"""
+    replaced: pd.DataFrame = df.replace("", np.nan)
+    return replaced.dropna(how='all', axis=1, inplace=False)
+
+
+def handle_duplicated_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Historic data has sometimes duplicated rows"""
     if not df.index.has_duplicates:
         return df
 
     # Remove empty columns first
-    without_empty_columns: DataFrame = remove_empty_columns(df)
+    without_empty_columns: pd.DataFrame = remove_empty_columns(df)
     # Get duplicated Date Index Series
     duplicated_indexes: np.ndarray = without_empty_columns.index.duplicated(keep=False)
-    duplicates: DataFrame = without_empty_columns[duplicated_indexes]
-    merged: DataFrame = merge_duplicates(duplicates.iloc[0], duplicates.iloc[1])
-    cleaned: DataFrame = pd.concat([without_empty_columns, merged])
+    duplicates: pd.DataFrame = without_empty_columns[duplicated_indexes]
+    merged: pd.DataFrame = merge_duplicates(duplicates.iloc[0], duplicates.iloc[1])
+    cleaned: pd.DataFrame = pd.concat([without_empty_columns, merged])
     return cleaned.sort_index()
 
 
-def remove_empty_columns(df: DataFrame) -> DataFrame:
-    """Remove empty columns"""
-    replaced: DataFrame = df.replace("", np.nan)
-    return replaced.dropna(how='all', axis=1, inplace=False)
+def resize_to_range_of_years(df: pd.DataFrame) -> pd.DataFrame:
+    """This is to have the same range of rows throughout every dataframe"""
+    result: pd.DataFrame = df.copy()
+    result.resample('1Y', origin=SINCE)
+    return result
 
 
-def aggregate_years(df: DataFrame) -> DataFrame:
+def aggregate_years(df: pd.DataFrame) -> pd.DataFrame:
     """Historical data have their row id as date, we want them as a clear year"""
     df.index = pd.to_datetime(df.index)
     return (
@@ -72,28 +81,60 @@ def aggregate_years(df: DataFrame) -> DataFrame:
     )
 
 
-def fill_range_of_years(df: DataFrame) -> DataFrame:
-    """This is to have the same number of rows throughout every dataframe"""
-    structure: DataFrame = pd.DataFrame(
-        index=pd.period_range(start=SINCE, end=TILL, freq='Y', name='Date'),
+def attach_multiindex(df: pd.DataFrame, instrument: str) -> pd.DataFrame:
+    """Attach instrument identifier and DateTime Year as a MultiIndex to the dataframe"""
+    result: pd.DataFrame = df.copy()
+    result.index = pd.MultiIndex.from_product(
+        [[instrument], df.index], names=["Instrument", "Date"]
     )
-    return df.reindex(index=structure.index)
+    return result
 
 
-def cleaning_history(df: DataFrame) -> DataFrame:
-    """Coupling the different functions into one function"""
-    unique: DataFrame = handle_duplicated_rows(df)
-    striped: DataFrame = aggregate_years(unique)
-    #TODO: rewrite to support multiple companies in one dataframe
-    filled: DataFrame = fill_range_of_years(striped)
-    if isinstance(filled.columns, pd.MultiIndex):
-        filled.columns = filled.columns.droplevel(0)
-    return filled
+def standardize_instrument_history(
+        df: pd.DataFrame,
+        instrument: str,
+) -> pd.DataFrame:
+    """
+    Process and clean historical data.
+    Steps:
+    1. Handle duplicated rows
+    2. Aggregate values by year
+    3. Resize dataframe to the range of years
+    4. Reindex dataframe to MultiIndex [(Instrument, Date)]
+
+    :arg:
+        df (pd.DataFrame): Historical data
+        instrument (str): Company Identifier
+    :return: standardized historical data
+    """
+    unique: pd.DataFrame = handle_duplicated_rows(df)
+    aggregated: pd.DataFrame = aggregate_years(unique)
+    resized: pd.DataFrame = resize_to_range_of_years(aggregated)
+    return attach_multiindex(resized, instrument)
 
 
-def aggregate_static(df: DataFrame) -> DataFrame:
+def extract_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Group the dataframe by instruments"""
+    companies = df.columns.get_level_values(0).unique()
+    company_dataframes: dict[str, pd.DataFrame] = {}
+
+    for company in companies:
+        df_company: pd.DataFrame = pd.DataFrame(df.xs(key=company, axis=1, level=0))
+        company_dataframes[company] = df_company
+    return company_dataframes
+
+
+def resize_to_range(df: pd.DataFrame) -> pd.DataFrame:
+    """Fill missing years to model the data to a certain range"""
+    return pd.DataFrame(
+        df.groupby('Instrument').apply(lambda g: resize_to_range_of_years(g))
+        .reset_index(drop=True)
+    )
+
+
+def aggregate_static(df: pd.DataFrame) -> pd.DataFrame:
     """Split all static rows by instruments"""
-    return DataFrame(
+    return pd.DataFrame(
         df
         .groupby("Instrument")
         .agg(
@@ -103,30 +144,30 @@ def aggregate_static(df: DataFrame) -> DataFrame:
     )
 
 
-def clean_static(df: DataFrame) -> DataFrame:
+def clean_static(df: pd.DataFrame) -> pd.DataFrame:
     """clean static rows"""
-    grouped: DataFrame = aggregate_static(df)
+    grouped: pd.DataFrame = aggregate_static(df)
     return remove_empty_columns(grouped)
 
 
-def join_static_and_historic(static: DataFrame, historic: DataFrame) -> DataFrame:
+def join_static_and_historic(static: pd.DataFrame, historic: pd.DataFrame) -> pd.DataFrame:
     """Merge static and historic data into one dataframe for one company"""
-    blown_up_static: DataFrame = blow_up(static)
+    blown_up_static: pd.DataFrame = blow_up(static)
     return historic.join(blown_up_static, how='left', validate='one_to_one')
 
 
-def join_all(static: DataFrame, historic: DataFrame) -> DataFrame:
+def join_all(static: pd.DataFrame, historic: pd.DataFrame) -> pd.DataFrame:
     """Join static data and historic data into one dataframe for all companies"""
-    stretched: DataFrame = stretch_static(static)
+    stretched: pd.DataFrame = stretch_static(static)
     return historic.join(stretched, how='left', validate='one_to_one')
 
 
-def duplicate_group(df: DataFrame, times: int) -> DataFrame:
+def duplicate_group(df: pd.DataFrame, times: int) -> pd.DataFrame:
     """Duplicate a group of rows"""
     return pd.concat([df] * times, ignore_index=True)
 
 
-def stretch_static(df: DataFrame) -> DataFrame:
+def stretch_static(df: pd.DataFrame) -> pd.DataFrame:
     """All statistical data for each company should be duplicated to the size
      of the historic data to prepare a one-to-one merge"""
     return pd.DataFrame(
@@ -137,7 +178,7 @@ def stretch_static(df: DataFrame) -> DataFrame:
     )
 
 
-def blow_up(df: DataFrame) -> DataFrame:
+def blow_up(df: pd.DataFrame) -> pd.DataFrame:
     """
     Duplicate rows in static dataframe until it has the sice of
     historic dataframes (e.g. row 2010-2024)
@@ -150,19 +191,19 @@ def blow_up(df: DataFrame) -> DataFrame:
     return df
 
 
-def concat_companies(df: DataFrame, new_data: DataFrame) -> DataFrame:
+def concat_companies(df: pd.DataFrame, new_data: pd.DataFrame) -> pd.DataFrame:
     """Merge new data into one dataframe"""
-    dates: DataFrame = pd.DataFrame(new_data.index.to_series(), columns=['Date'])
+    dates: pd.DataFrame = pd.DataFrame(new_data.index.to_series(), columns=['Date'])
     new_data.insert(0, 'Date', dates)
     df = pd.concat([df, new_data], ignore_index=True, sort=False)
     return df
 
 
-def join(static: DataFrame, timeseries: DataFrame) -> DataFrame:
+def join(static: pd.DataFrame, timeseries: pd.DataFrame) -> pd.DataFrame:
     """Join static and timeseries dataframes"""
     grouped_static: DataFrameGroupBy = static.groupby('Instrument')
     grouped_timeseries: DataFrameGroupBy = timeseries.groupby('Instrument')
-    return DataFrame(
+    return pd.DataFrame(
         grouped_static.apply(
             lambda g: grouped_timeseries.get_group([g.name]).join(g, on='Insturment', how='left')
         )

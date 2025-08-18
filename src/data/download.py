@@ -18,7 +18,7 @@ from pandas import DataFrame
 
 from core import Config
 from core.exceptions import DataDownloadError
-from .cleaning import cleaning_history, concat_companies, aggregate_static, \
+from .cleaning import concat_companies, aggregate_static, \
     remove_empty_columns, join
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -174,7 +174,8 @@ class LSEGDataDownloader:
                     parameters=self.config.params,
                     header_type=HeaderType.NAME,
                 )
-                return cleaning_history(data)
+                return data
+                # return cleaning_history(data)
             except LDError:
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
