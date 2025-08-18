@@ -2,7 +2,6 @@
 Collection of functions to help clean dataframes
 """
 from datetime import datetime
-from logging import Logger
 
 import pandas as pd
 import numpy as np
@@ -111,6 +110,13 @@ def standardize_instrument_history(
     aggregated: pd.DataFrame = aggregate_years(unique)
     resized: pd.DataFrame = resize_to_range_of_years(aggregated)
     return attach_multiindex(resized, instrument)
+
+
+def standardize_historic_collection(collection: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """Standardize all historical dataframes in a collection"""
+    for company in collection:
+        collection[company] = standardize_instrument_history(collection[company], company)
+    return collection
 
 
 def extract_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:

@@ -18,8 +18,8 @@ from pandas import DataFrame
 
 from core import Config
 from core.exceptions import DataDownloadError
-from .cleaning import concat_companies, aggregate_static, \
-    remove_empty_columns, join
+from .cleaning import concat_companies, aggregate_static, extract_companies, \
+    remove_empty_columns, standardize_historic_collection
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -95,10 +95,10 @@ class LSEGDataDownloader:
                 self.download_all_historic_chunks,
                 self.config.companies_chunks
             )
-            all_historic = pd.concat(historic_results, ignore_index=True)
-            all_historic.to_csv(self.config.data_dir / "datasets" / "historic" / "historic.csv")
-        all_data: DataFrame = join(all_static, all_historic)
-        all_data.to_csv(self.config.data_dir / "datasets" / "all_data.csv")
+            #all_historic = pd.concat(historic_results, ignore_index=True)
+            #all_historic.to_csv(self.config.data_dir / "datasets" / "historic" / "historic.csv")
+        #all_data: DataFrame = join(all_static, all_historic)
+        #all_data.to_csv(self.config.data_dir / "datasets" / "all_data.csv")
 
     def download_all_static_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all static fields from a list of companies"""
@@ -145,9 +145,11 @@ class LSEGDataDownloader:
             chunk
         )
 
-    def download_all_historic_chunks(self, companies: list[str]) -> DataFrame:
+    def download_all_historic_chunks(self, companies: list[str]) -> dict[str, pd.DataFrame]:
         """Downloading all fields from a company and join them together"""
-        df: DataFrame = self.download_historic_from(companies, self.config.historic_chunks[0])
+        collection: dict[str, pd.DataFrame] = (
+            self.download_historic_from(companies, self.config.historic_chunks[0])
+        )
         for i, chunk in enumerate(self.config.historic_chunks[1:]):
             msg = (
                 f"History download: {companies[0]} - {companies[-1]}"
@@ -155,15 +157,20 @@ class LSEGDataDownloader:
             )
             self.logger.info(msg)
             print(msg)
-            new_data: DataFrame = self.download_historic_from(companies, chunk)
-            df = df.join(new_data.set_index('Date'), on='Date', how='left', validate='one_to_one')
-        df.to_csv(
-            self.config.historic_dir / f"companies-{companies[0]}-{companies[-1]}.csv",
-            index=False
-        )
-        return df
+            new_collection: dict[str, pd.DataFrame] = self.download_historic_from(companies, chunk)
+            for instrument, df in new_collection.items():
+                collection[instrument] = collection[instrument].join(df)
+                collection[instrument].to_csv(
+                    self.config.historic_dir / f"companies-{companies[0]}-{companies[-1]}.csv",
+                    index=False
+                )
+        return collection
 
-    def download_historic_from(self, companies: list[str], chunk: list[str]) -> DataFrame:
+    def download_historic_from(
+            self,
+            companies: list[str],
+            chunk: list[str]
+    ) -> dict[str, pd.DataFrame]:
         """Downloading content of with time series fields from a company"""
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
@@ -174,8 +181,10 @@ class LSEGDataDownloader:
                     parameters=self.config.params,
                     header_type=HeaderType.NAME,
                 )
-                return data
-                # return cleaning_history(data)
+                collection: dict[str, pd.DataFrame] = standardize_historic_collection(
+                    extract_companies(data)
+                )
+                return collection
             except LDError:
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
