@@ -82,7 +82,7 @@ class LSEGDataDownloader:
         """Downloading all frames from LSEG database"""
         self.logger.info("Downloading all frames from LSEG database")
         all_static: DataFrame
-        all_historic: DataFrame
+        all_historic: dict[str, pd.DataFrame] = {}
         with ThreadPoolExecutor(self.config.max_workers) as executor:
             static_results = executor.map(
                 self.download_all_static_chunks,
@@ -95,11 +95,14 @@ class LSEGDataDownloader:
                 self.download_all_historic_chunks,
                 self.config.companies_chunks
             )
-            #all_historic = pd.concat(historic_results, ignore_index=True)
-            #all_historic.to_csv(self.config.data_dir / "datasets" / "historic" / "historic.csv")
+            for dictionaries in historic_results:
+                all_historic.update(dictionaries)
+            historic: pd.DataFrame = pd.concat(all_historic.values(), ignore_index=True)
+            historic.to_csv(self.config.data_dir / "datasets" / "historic" / "historic.csv")
         #all_data: DataFrame = join(all_static, all_historic)
         #all_data.to_csv(self.config.data_dir / "datasets" / "all_data.csv")
 
+    #TODO: change to multiindex and new join function
     def download_all_static_chunks(self, companies: list[str]) -> DataFrame:
         """Downloading all static fields from a list of companies"""
         df: DataFrame = self.download_static_from(companies, self.config.historic_chunks[0])
