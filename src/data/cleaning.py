@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pandas as pd
 import numpy as np
-from pandas import Series, PeriodIndex
+from pandas import Series
 from pandas.core.groupby import DataFrameGroupBy
 
 SINCE: datetime = datetime(2010, 1, 1)
@@ -89,12 +89,12 @@ def attach_multiindex(df: pd.DataFrame, instrument: str) -> pd.DataFrame:
     return result
 
 
-def standardize_instrument_history(
-        df: pd.DataFrame,
+def standardize_historic(
         instrument: str,
+        df: pd.DataFrame
 ) -> pd.DataFrame:
     """
-    Process and clean historical data.
+    Process and standardize historical data.
     Steps:
     1. Handle duplicated rows
     2. Aggregate values by year
@@ -115,27 +115,42 @@ def standardize_instrument_history(
 def standardize_historic_collection(collection: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     """Standardize all historical dataframes in a collection"""
     for company in collection:
-        collection[company] = standardize_instrument_history(collection[company], company)
+        collection[company] = standardize_historic(company, collection[company])
     return collection
 
 
-def extract_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+#TODO can't handle only single company dataframes yet, cause they are not loaded as MultiIndex from lseg
+def extract_historic_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
     """Group the dataframe by instruments"""
     companies = df.columns.get_level_values(0).unique()
     company_dataframes: dict[str, pd.DataFrame] = {}
-
     for company in companies:
         df_company: pd.DataFrame = pd.DataFrame(df.xs(key=company, axis=1, level=0))
-        company_dataframes[company] = df_company
+        company_dataframes.update({company: df_company})
     return company_dataframes
 
 
-def resize_to_range(df: pd.DataFrame) -> pd.DataFrame:
-    """Fill missing years to model the data to a certain range"""
-    return pd.DataFrame(
-        df.groupby('Instrument').apply(lambda g: resize_to_range_of_years(g))
-        .reset_index(drop=True)
-    )
+def standardize_static(df: pd.DataFrame) -> pd.DataFrame:
+    """Process and standardize static data"""
+    aggregated: pd.DataFrame = aggregate_static(df)
+    unique: pd.DataFrame = remove_empty_columns(aggregated)
+    return unique.set_index('Instrument')
+
+
+def standardize_static_collection(collection: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """Standardize all static dataframes in a collection"""
+    for company in collection:
+        collection[company] = standardize_static(collection[company])
+    return collection
+
+
+def extract_static_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Group the dataframe by instruments"""
+    grouped: DataFrameGroupBy = df.groupby('Instrument')
+    company_dataframes: dict[str, pd.DataFrame] = {}
+    for instrument in grouped.groups:
+        company_dataframes.update({str(instrument): grouped.get_group(instrument)})
+    return company_dataframes
 
 
 def aggregate_static(df: pd.DataFrame) -> pd.DataFrame:
@@ -147,70 +162,4 @@ def aggregate_static(df: pd.DataFrame) -> pd.DataFrame:
             lambda col: col.dropna().iloc[0] if col.notna().any() else pd.NA
         )
         .reset_index()
-    )
-
-
-def clean_static(df: pd.DataFrame) -> pd.DataFrame:
-    """clean static rows"""
-    grouped: pd.DataFrame = aggregate_static(df)
-    return remove_empty_columns(grouped)
-
-
-def join_static_and_historic(static: pd.DataFrame, historic: pd.DataFrame) -> pd.DataFrame:
-    """Merge static and historic data into one dataframe for one company"""
-    blown_up_static: pd.DataFrame = blow_up(static)
-    return historic.join(blown_up_static, how='left', validate='one_to_one')
-
-
-def join_all(static: pd.DataFrame, historic: pd.DataFrame) -> pd.DataFrame:
-    """Join static data and historic data into one dataframe for all companies"""
-    stretched: pd.DataFrame = stretch_static(static)
-    return historic.join(stretched, how='left', validate='one_to_one')
-
-
-def duplicate_group(df: pd.DataFrame, times: int) -> pd.DataFrame:
-    """Duplicate a group of rows"""
-    return pd.concat([df] * times, ignore_index=True)
-
-
-def stretch_static(df: pd.DataFrame) -> pd.DataFrame:
-    """All statistical data for each company should be duplicated to the size
-     of the historic data to prepare a one-to-one merge"""
-    return pd.DataFrame(
-        df.groupby('Instrument', group_keys=False).apply(
-            lambda g: duplicate_group(g, (TILL.year - SINCE.year))
-        )
-        .reset_index(drop=True)
-    )
-
-
-def blow_up(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Duplicate rows in static dataframe until it has the sice of
-    historic dataframes (e.g. row 2010-2024)
-    """
-    for _ in range(int(SINCE.year), int(TILL.year)):
-        df = pd.concat([df, df.iloc[[0]]], ignore_index=True)
-    period: PeriodIndex = pd.period_range(start=SINCE, end=TILL, freq='Y')
-    df.set_index(period, inplace=True)
-    df.index.name = "Date"
-    return df
-
-
-def concat_companies(df: pd.DataFrame, new_data: pd.DataFrame) -> pd.DataFrame:
-    """Merge new data into one dataframe"""
-    dates: pd.DataFrame = pd.DataFrame(new_data.index.to_series(), columns=['Date'])
-    new_data.insert(0, 'Date', dates)
-    df = pd.concat([df, new_data], ignore_index=True, sort=False)
-    return df
-
-
-def join(static: pd.DataFrame, timeseries: pd.DataFrame) -> pd.DataFrame:
-    """Join static and timeseries dataframes"""
-    grouped_static: DataFrameGroupBy = static.groupby('Instrument')
-    grouped_timeseries: DataFrameGroupBy = timeseries.groupby('Instrument')
-    return pd.DataFrame(
-        grouped_static.apply(
-            lambda g: grouped_timeseries.get_group([g.name]).join(g, on='Insturment', how='left')
-        )
     )
