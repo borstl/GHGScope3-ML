@@ -31,15 +31,6 @@ def get_empty_columns_names(csv: str | pathlib.Path) -> list[str]:
     return na_df.columns[df.isna().all()].tolist()
 
 
-def bundle(starter: DataFrame, incoming: DataFrame) -> DataFrame:
-    """Concatenate two company dataframes if there is already one filled with data"""
-    if starter.empty:
-        df = pd.DataFrame(incoming.index.to_series(), columns=['Date'])
-        incoming.insert(0, 'Date', df)
-        return incoming
-    return concat_companies(starter, incoming)
-
-
 class LSEGDataDownloader:
     """Downloading Data from LSEG API"""
     config: Config = None
@@ -119,12 +110,12 @@ class LSEGDataDownloader:
     def download_all_static_chunks(self, companies: list[str]) -> dict[str, pd.DataFrame]:
         """Downloading all static fields from a list of companies"""
         collection: dict[str, pd.DataFrame] = (
-            self.download_static_from(companies, self.config.historic_chunks[0])
+            self.download_static_from(companies, self.config.static_chunks[0])
         )
-        for i, chunk in enumerate(self.config.historic_chunks[1:]):
+        for i, chunk in enumerate(self.config.static_chunks[1:]):
             msg = (
                 f"Static download: {companies[0]}-{companies[-1]}: "
-                f"Chunk{i + 2}:{len(self.config.historic_chunks)}"
+                f"Chunk{i + 2}:{len(self.config.static_chunks)}"
             )
             self.logger.info(msg)
             print(msg)
