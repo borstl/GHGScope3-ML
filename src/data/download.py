@@ -122,20 +122,21 @@ class LSEGDataDownloader:
 
     def download_static_from(
             self, companies: list[str],
-            chunk: list[str]
+            features: list[str]
     ) -> dict[str, pd.DataFrame]:
         """Downloading static fields from a list of companies"""
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                return download_static(companies, chunk)
+                print("Downloading static data: for ", companies, "")
+                return download_static(companies, features)
             except LDError as e:
                 msg: str = f"Error downloading static data {e}, retrying in {delay} seconds"
                 self.logger.exception(msg)
                 print(msg)
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
-        exc = DataDownloadError("Static download failed", companies, chunk)
+        exc = DataDownloadError("Static download failed", companies, features)
         self.logger.exception("Raised DataDownloadError:", exc_info=exc)
         raise exc
 
@@ -144,8 +145,8 @@ class LSEGDataDownloader:
         collection: dict[str, pd.DataFrame] = {}
         for i, chunk in enumerate(self.config.historic_chunks):
             msg: str = (
-                f"History download: {companies[0]}-{companies[-1]}"
-                f" - Chunk{i+1}:{len(self.config.historic_chunks)}"
+                f"Downloading historic data: for {companies} "
+                f"with Chunk{i+1}:{len(self.config.historic_chunks)}"
             )
             self.logger.info(msg)
             print(msg)

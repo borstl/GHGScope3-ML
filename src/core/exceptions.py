@@ -24,5 +24,6 @@ class DataValidationError(MLProjectError):
     """Raised when data validation fails"""
 
 
+#TODO raise when configuration is wrong like empty company list
 class ConfigurationError(MLProjectError):
     """Raised when configuration is invalid"""
