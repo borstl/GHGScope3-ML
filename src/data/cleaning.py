@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from pandas import Series
 from pandas.core.groupby import DataFrameGroupBy
 
@@ -18,6 +19,10 @@ def merge_duplicates(timeseries1: Series, timeseries2: Series) -> pd.DataFrame:
     Takes two time series objects and returns a new time series object.
     Iterating over each column in the time series objects and comparing
     the values according as described below.
+    :arg:
+    timeseries1 (pd.Series): First time series object
+    timeseries2 (pd.Series): Second time series object
+    :return: The merged time series object as dataframe
     """
     merged: pd.DataFrame = pd.DataFrame([timeseries1])
     for column in timeseries1.index:
@@ -52,14 +57,11 @@ def handle_duplicated_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Historic data has sometimes duplicated rows"""
     if not df.index.has_duplicates:
         return df
-
-    # Remove empty columns first
-    without_empty_columns: pd.DataFrame = remove_empty_columns(df)
     # Get duplicated Date Index Series
-    duplicated_indexes: np.ndarray = without_empty_columns.index.duplicated(keep=False)
-    duplicates: pd.DataFrame = without_empty_columns[duplicated_indexes]
+    duplicated_indexes: np.ndarray = df.index.duplicated(keep=False)
+    duplicates: pd.DataFrame = df[duplicated_indexes]
     merged: pd.DataFrame = merge_duplicates(duplicates.iloc[0], duplicates.iloc[1])
-    cleaned: pd.DataFrame = pd.concat([without_empty_columns, merged])
+    cleaned: pd.DataFrame = pd.concat([df, merged])
     return cleaned.sort_index()
 
 
@@ -73,6 +75,8 @@ def resize_to_range_of_years(df: pd.DataFrame) -> pd.DataFrame:
 def aggregate_years(df: pd.DataFrame) -> pd.DataFrame:
     """Historical data have their row id as date, we want them as a clear year"""
     df.index = pd.to_datetime(df.index)
+    if df.empty:
+        return df[df.index.to_series().between(SINCE, TILL)]
     return (
         df[df.index.to_series().between(SINCE, TILL)]
         .resample('YE')
@@ -100,13 +104,13 @@ def standardize_historic(
     2. Aggregate values by year
     3. Resize dataframe to the range of years
     4. Reindex dataframe to MultiIndex [(Instrument, Date)]
-
     :arg:
         df (pd.DataFrame): Historical data
         instrument (str): Company Identifier
     :return: standardized historical data
     """
-    unique: pd.DataFrame = handle_duplicated_rows(df)
+    without_empty_columns: pd.DataFrame = remove_empty_columns(df)
+    unique: pd.DataFrame = handle_duplicated_rows(without_empty_columns)
     aggregated: pd.DataFrame = aggregate_years(unique)
     resized: pd.DataFrame = resize_to_range_of_years(aggregated)
     return attach_multiindex(resized, instrument)
@@ -119,9 +123,12 @@ def standardize_historic_collection(collection: dict[str, pd.DataFrame]) -> dict
     return collection
 
 
-#TODO can't handle only single company dataframes yet, cause they are not loaded as MultiIndex from lseg
+#TODO can't handle only single company dataframes yet, cause they are not loaded as MultiIndex
 def extract_historic_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
-    """Group the dataframe by instruments"""
+    """
+    Group the dataframe by instruments
+    WORKAROUND: Only load multiple companies at once
+    """
     companies = df.columns.get_level_values(0).unique()
     company_dataframes: dict[str, pd.DataFrame] = {}
     for company in companies:
@@ -163,3 +170,55 @@ def aggregate_static(df: pd.DataFrame) -> pd.DataFrame:
         )
         .reset_index()
     )
+
+
+def remove_all_same_values(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove all columns where all values in that column are the same.
+    This is to reduce the dimensionality of the dataframe.
+    :arg: df (pd.DataFrame): Dataframe to be cleaned
+    :return: Dataframe with columns where no column has all the same values
+    """
+    return df.loc[:, (df != df.iloc[0]).any()]
+
+
+def historical_medians(df: pd.DataFrame) -> list[str]:
+    """
+    Spot sudden step changes in reported columns. If the values in the column are far
+    larger or smaller than its historical median, then this is likely to be the result
+    of either a change in calculation methodology or the result of some large corporate
+    change. E.g., merger and acquisitions activity.
+    :arg: df (pd.DataFrame): Historical data
+    :return: List of columns with sudden step changes
+    """
+    abrupt_change_columns: list[str] = []
+    for column in df.columns:
+        if df[column].dtype in ('float', 'int'):
+            median: float = df[column].median(numeric_only=True)
+            if df[column].max() > median * 2:
+                abrupt_change_columns.append(column)
+            if df[column].min() < median / 2:
+                abrupt_change_columns.append(column)
+    return abrupt_change_columns
+
+
+def read_all_csv(directory: Path) -> dict[str, pd.DataFrame]:
+    """Read all csv files in a given directory"""
+    data_dict: dict[str, pd.DataFrame] = {}
+    for file in directory.glob("*.csv"):
+        if file.is_file():
+            data_dict.update({file.name: pd.read_csv(file)})
+    return data_dict
+
+
+def combine_all_static_frames(data_dict: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Combine all static dataframes into one"""
+    return pd.concat(data_dict.values()).reset_index(drop=True)
+
+
+def combine_all_historic_frames(data_dict: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Combine all historic dataframes into one"""
+    return pd.concat(data_dict.values())
+
+
+

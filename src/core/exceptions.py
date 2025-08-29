@@ -7,10 +7,17 @@ class MLProjectError(Exception):
 
 class DataDownloadError(MLProjectError):
     """Raised when data download fails"""
-    def __init__(self, message: str, companies: list = [], features: list = []):
-        self.companies = companies
-        self.features = features
+    def __init__(self, message: str, companies=None, features=None):
+        if features is None:
+            features = []
+        if companies is None:
+            companies = []
+        self.companies: list[str] = companies
+        self.features: list[str] = features
         super().__init__(message)
+
+    def __str__(self):
+        return f"Connection failed for {self.companies} with {self.features}"
 
 
 class DataValidationError(MLProjectError):

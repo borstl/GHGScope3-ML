@@ -1,0 +1,30 @@
+TR.InvMvmtSharesDisp - because a parameter 'InvMvmtCategory' is not specified
+TR.PJFLeagueMandateDate - because parameter 'DealPJFLTType' is not specified
+TR.DLROLEOFFIRM - because parameter 'AdvisorCode' is not specified
+TR.InvMvmtPriceUsed - because parameter 'InvMvmtCategory' is not specified
+TR.InvMvmtTransCategory - because parameter 'InvMvmtCategory' is not specified
+TR.InvMvmtNumInvestDisp
+TR.InvMvmtHoldingsShrsChg
+TR.InvMvmtTransCategory
+TR.InvMvmtTotShrsTraded
+TR.InvMvmtSharesAcqValue
+TR.InvMvmtSharesDispValue
+TR.InvMvmtTotShrsHeld
+TR.InvMvmtHoldingsValChg
+TR.InvMvmtSharesAcquired
+TR.InvMvmtNumInvestorsAcq
+TR.InvMvmtTransDate
+TR.InvMvmtTotShrsHeldVal
+TR.InvMvmtPriorTransDate
+TR.InvMvmtNumInvestTrade
+TR.InvMvmtHoldingsPctChg
+TR.InvMvmtPctShrsOutHeld
+TR.InvMvmtNumInvestInCat
+TR.MUNIROLEOFFIRM
+TR.PJFLeagueRankDate
+TR.LNROLEOFFIRM
+TR.NIROLEOFFIRM
+TR.LEOFFIRM
+TR.PJFLEAGUETABLEDATE
+TR.MUNIROLEOFLAWFIRM
+TR.PJFRelEquityNIParentManagerLawFirmCode

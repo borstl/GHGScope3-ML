@@ -1,0 +1,609 @@
+Abortifacients
+Accidental Spills
+Accidental Spills To EVIC USD in million
+Accidental Spills To Revenues USD in million
+Accidental Spills To Revenues USD in million Score
+Accidents Total
+Accounting Controversies Count
+Adult Entertainment Producer Ownership Percent
+Adult Entertainment Retailer Ownership Percent
+AGM Date
+AGM Notice Filing Date
+Agrochemical Products
+Agrochemical Products Score
+Alcohol 5% Revenues
+Alcohol Producer Ownership Percent
+Alcohol Producer Revenue
+Alcohol Producer Revenue Percent
+Alcohol Retailer Ownership Percent
+Alcohol Retailer Revenue
+Alcohol Retailer Revenue Percent
+Alcohol Revenues
+Animal Testing Score
+Anti-Personnel Landmines Ownership Percent
+Arctic Oil Producer Ownership Percent
+Arctic Oil Producer Revenue
+Arctic Oil Producer Revenue Percent
+Armaments 5% Revenues
+Armaments Revenues
+Average Employee Length of Service
+BBBEE Level
+Biodiversity and Ecosystem Controversies Count
+Board Cultural Diversity, Percent
+Board Cultural Diversity, Percent Score
+Bonus Cap High Paid Staff
+CAGR 3 Years Cement CO2 Equivalent Emissions
+CAGR 3 Years Fleet CO2 Emissions
+CAGR 5 Years Cement CO2 Equivalent Emissions
+CAGR 5 Years Fleet CO2 Emissions
+Carbon Intensity per Clinker Produced
+Carbon Intensity per Energy Produced
+CDP Climate Commitment
+CDP Climate Policy Statement
+CDP Downstream scope 3 emissions Franchises
+CDP Downstream scope 3 emissions Investments
+CDP Downstream scope 3 emissions Leased Assets
+CDP Downstream scope 3 emissions Other
+CDP Downstream scope 3 emissions Processing of Sold Products
+CDP Electricity Produced from Biomass
+CDP Electricity Produced from Coal
+CDP Electricity Produced from Gas
+CDP Electricity Produced from Geothermal
+CDP Electricity Produced from Hydro
+CDP Electricity Produced from Nuclear
+CDP Electricity Produced from Oil
+CDP Electricity Produced from Other Renewables
+CDP Electricity Produced from Solar
+CDP Electricity Produced from Wind
+CDP Energy Commitment
+CDP Future Capex Alignment Commitment
+CDP Future Capex Alignment Methodology Disclosure
+CDP Independent Verification of Operational GHG Emissions Data
+CDP Internal Carbon Price per Tonne
+CDP Long Term Set 1 Downstream Franchises
+CDP Long Term Set 1 Downstream Investments
+CDP Long Term Set 1 Downstream Leased Assets
+CDP Long Term Set 1 Downstream Other
+CDP Long Term Set 1 Downstream Processing of Sold Products
+CDP Long Term Set 1 Upstream Capital Goods
+CDP Long Term Set 1 Upstream Fuel and Energy Related Activities
+CDP Long Term Set 1 Upstream Leased Assets
+CDP Long Term Set 1 Upstream Other
+CDP Long Term Set 1 Upstream Purchased goods and services
+CDP Long Term Set 1 Upstream Waste Generated in Operations
+CDP Long Term Set 2 Downstream Franchises
+CDP Long Term Set 2 Downstream Investments
+CDP Long Term Set 2 Downstream Leased Assets
+CDP Long Term Set 2 Downstream Other
+CDP Long Term Set 2 Downstream Processing of Sold Products
+CDP Long Term Set 2 Upstream Capital Goods
+CDP Long Term Set 2 Upstream Fuel and Energy Related Activities
+CDP Long Term Set 2 Upstream Leased Assets
+CDP Long Term Set 2 Upstream Other
+CDP Long Term Set 2 Upstream Purchased goods and services
+CDP Long Term Set 2 Upstream Waste Generated in Operations
+CDP Long Term Set 3 Downstream End of Life Treatment of Sold Products
+CDP Long Term Set 3 Downstream Franchises
+CDP Long Term Set 3 Downstream Investments
+CDP Long Term Set 3 Downstream Leased Assets
+CDP Long Term Set 3 Downstream Other
+CDP Long Term Set 3 Downstream Processing of Sold Products
+CDP Long Term Set 3 Downstream Transportation and Distribution
+CDP Long Term Set 3 Downstream Use of Sold Products
+CDP Long Term Set 3 Upstream Business Travel
+CDP Long Term Set 3 Upstream Capital Goods
+CDP Long Term Set 3 Upstream Employee Commuting
+CDP Long Term Set 3 Upstream Fuel and Energy Related Activities
+CDP Long Term Set 3 Upstream Leased Assets
+CDP Long Term Set 3 Upstream Other
+CDP Long Term Set 3 Upstream Purchased goods and services
+CDP Long Term Set 3 Upstream Transportation and Distribution
+CDP Long Term Set 3 Upstream Waste Generated in Operations
+CDP Long Term Set 4 Base Year GHG Emission Total
+CDP Long Term Set 4 Downstream End of Life Treatment of Sold Products
+CDP Long Term Set 4 Downstream Franchises
+CDP Long Term Set 4 Downstream Investments
+CDP Long Term Set 4 Downstream Leased Assets
+CDP Long Term Set 4 Downstream Other
+CDP Long Term Set 4 Downstream Processing of Sold Products
+CDP Long Term Set 4 Downstream Transportation and Distribution
+CDP Long Term Set 4 Downstream Use of Sold Products
+CDP Long Term Set 4 GHG Emission Base Year
+CDP Long Term Set 4 GHG Emission Net Zero Target
+CDP Long Term Set 4 GHG Emission Percentage Reduction Targeted
+CDP Long Term Set 4 GHG Emission Scope
+CDP Long Term Set 4 GHG Emission Target Set Year
+CDP Long Term Set 4 GHG Emission Target Type
+CDP Long Term Set 4 GHG Emission Target Unit
+CDP Long Term Set 4 GHG Emission Target Year
+CDP Long Term Set 4 GHG Emissions Quantified Targets
+CDP Long Term Set 4 Percentage of GHG Emission Covered by Target
+CDP Long Term Set 4 Upstream Business Travel
+CDP Long Term Set 4 Upstream Capital Goods
+CDP Long Term Set 4 Upstream Employee Commuting
+CDP Long Term Set 4 Upstream Fuel and Energy Related Activities
+CDP Long Term Set 4 Upstream Leased Assets
+CDP Long Term Set 4 Upstream Other
+CDP Long Term Set 4 Upstream Purchased goods and services
+CDP Long Term Set 4 Upstream Transportation and Distribution
+CDP Long Term Set 4 Upstream Waste Generated in Operations
+CDP Long Term Set 5 Base Year GHG Emission Total
+CDP Long Term Set 5 Downstream End of Life Treatment of Sold Products
+CDP Long Term Set 5 Downstream Franchises
+CDP Long Term Set 5 Downstream Investments
+CDP Long Term Set 5 Downstream Leased Assets
+CDP Long Term Set 5 Downstream Other
+CDP Long Term Set 5 Downstream Processing of Sold Products
+CDP Long Term Set 5 Downstream Transportation and Distribution
+CDP Long Term Set 5 Downstream Use of Sold Products
+CDP Long Term Set 5 GHG Emission Base Year
+CDP Long Term Set 5 GHG Emission Net Zero Target
+CDP Long Term Set 5 GHG Emission Percentage Reduction Targeted
+CDP Long Term Set 5 GHG Emission Scope
+CDP Long Term Set 5 GHG Emission Target Set Year
+CDP Long Term Set 5 GHG Emission Target Type
+CDP Long Term Set 5 GHG Emission Target Unit
+CDP Long Term Set 5 GHG Emission Target Year
+CDP Long Term Set 5 GHG Emissions Quantified Targets
+CDP Long Term Set 5 Percentage of GHG Emission Covered by Target
+CDP Long Term Set 5 Upstream Business Travel
+CDP Long Term Set 5 Upstream Capital Goods
+CDP Long Term Set 5 Upstream Employee Commuting
+CDP Long Term Set 5 Upstream Fuel and Energy Related Activities
+CDP Long Term Set 5 Upstream Leased Assets
+CDP Long Term Set 5 Upstream Other
+CDP Long Term Set 5 Upstream Purchased goods and services
+CDP Long Term Set 5 Upstream Transportation and Distribution
+CDP Long Term Set 5 Upstream Waste Generated in Operations
+CDP Long Term Set 6 Base Year GHG Emission Total
+CDP Long Term Set 6 Downstream End of Life Treatment of Sold Products
+CDP Long Term Set 6 Downstream Franchises
+CDP Long Term Set 6 Downstream Investments
+CDP Long Term Set 6 Downstream Leased Assets
+CDP Long Term Set 6 Downstream Other
+CDP Long Term Set 6 Downstream Processing of Sold Products
+CDP Long Term Set 6 Downstream Transportation and Distribution
+CDP Long Term Set 6 Downstream Use of Sold Products
+CDP Long Term Set 6 GHG Emission Base Year
+CDP Long Term Set 6 GHG Emission Net Zero Target
+CDP Long Term Set 6 GHG Emission Percentage Reduction Targeted
+CDP Long Term Set 6 GHG Emission Scope
+CDP Long Term Set 6 GHG Emission Target Set Year
+CDP Long Term Set 6 GHG Emission Target Type
+CDP Long Term Set 6 GHG Emission Target Unit
+CDP Long Term Set 6 GHG Emission Target Year
+CDP Long Term Set 6 GHG Emissions Quantified Targets
+CDP Long Term Set 6 Percentage of GHG Emission Covered by Target
+CDP Long Term Set 6 Upstream Business Travel
+CDP Long Term Set 6 Upstream Capital Goods
+CDP Long Term Set 6 Upstream Employee Commuting
+CDP Long Term Set 6 Upstream Fuel and Energy Related Activities
+CDP Long Term Set 6 Upstream Leased Assets
+CDP Long Term Set 6 Upstream Other
+CDP Long Term Set 6 Upstream Purchased goods and services
+CDP Long Term Set 6 Upstream Transportation and Distribution
+CDP Long Term Set 6 Upstream Waste Generated in Operations
+CDP Phasing out Investments in Carbon Intensive Assets or Products
+CDP Short Term GHG Emission Unquantified Process Targets
+CDP Short Term Set 1 Base Year GHG Emission Total
+CDP Short Term Set 1 Downstream End of Life Treatment of Sold Products
+CDP Short Term Set 1 Downstream Franchises
+CDP Short Term Set 1 Downstream Investments
+CDP Short Term Set 1 Downstream Leased Assets
+CDP Short Term Set 1 Downstream Other
+CDP Short Term Set 1 Downstream Processing of Sold Products
+CDP Short Term Set 1 Downstream Transportation and Distribution
+CDP Short Term Set 1 Downstream Use of Sold Products
+CDP Short Term Set 1 GHG Emission Base Year
+CDP Short Term Set 1 GHG Emission Net Zero Target
+CDP Short Term Set 1 GHG Emission Percentage Reduction Targeted
+CDP Short Term Set 1 GHG Emission Scope
+CDP Short Term Set 1 GHG Emission Target Set Year
+CDP Short Term Set 1 GHG Emission Target Type
+CDP Short Term Set 1 GHG Emission Target Unit
+CDP Short Term Set 1 GHG Emission Target Year
+CDP Short Term Set 1 GHG Emissions Quantified Targets
+CDP Short Term Set 1 Percentage of GHG Emission Covered by Target
+CDP Short Term Set 1 Upstream Business Travel
+CDP Short Term Set 1 Upstream Capital Goods
+CDP Short Term Set 1 Upstream Employee Commuting
+CDP Short Term Set 1 Upstream Fuel and Energy Related Activities
+CDP Short Term Set 1 Upstream Leased Assets
+CDP Short Term Set 1 Upstream Other
+CDP Short Term Set 1 Upstream Purchased goods and services
+CDP Short Term Set 1 Upstream Transportation and Distribution
+CDP Short Term Set 1 Upstream Waste Generated in Operations
+CDP Short Term Set 2 Base Year GHG Emission Total
+CDP Short Term Set 2 Downstream End of Life Treatment of Sold Products
+CDP Short Term Set 2 Downstream Franchises
+CDP Short Term Set 2 Downstream Investments
+CDP Short Term Set 2 Downstream Leased Assets
+CDP Short Term Set 2 Downstream Other
+CDP Short Term Set 2 Downstream Processing of Sold Products
+CDP Short Term Set 2 Downstream Transportation and Distribution
+CDP Short Term Set 2 Downstream Use of Sold Products
+CDP Short Term Set 2 GHG Emission Base Year
+CDP Short Term Set 2 GHG Emission Net Zero Target
+CDP Short Term Set 2 GHG Emission Percentage Reduction Targeted
+CDP Short Term Set 2 GHG Emission Scope
+CDP Short Term Set 2 GHG Emission Target Set Year
+CDP Short Term Set 2 GHG Emission Target Type
+CDP Short Term Set 2 GHG Emission Target Unit
+CDP Short Term Set 2 GHG Emission Target Year
+CDP Short Term Set 2 GHG Emissions Quantified Targets
+CDP Short Term Set 2 Percentage of GHG Emission Covered by Target
+CDP Short Term Set 2 Upstream Business Travel
+CDP Short Term Set 2 Upstream Capital Goods
+CDP Short Term Set 2 Upstream Employee Commuting
+CDP Short Term Set 2 Upstream Fuel and Energy Related Activities
+CDP Short Term Set 2 Upstream Leased Assets
+CDP Short Term Set 2 Upstream Other
+CDP Short Term Set 2 Upstream Purchased goods and services
+CDP Short Term Set 2 Upstream Transportation and Distribution
+CDP Short Term Set 2 Upstream Waste Generated in Operations
+CDP Upstream scope 3 emissions Leased Assets
+CDP Upstream scope 3 emissions Other
+CDP Upstream scope 3 emissions Waste Generated in Operations
+Cement CO2 Equivalents Emission
+Cement CO2 Equivalents Emission Score
+Cement CO2 Equivalents Emission YoY
+Cement Energy Use
+Cement Energy Use Score
+Certified Palm Oil Percent
+Certified Palm Oil Percent Supply Chain
+Chemical or Biological Weapons Ownership Percent
+Chief Diversity Officer
+Climate Risk Insurance Count
+Cluster Munitions Ownership Percent
+CO2 Equivalent Emission Indirect Scope 2 Without Bifurcation
+CO2 Equivalent Emissions Total Without Bifurcation
+Coal Produced (Raw Material in Tonnes) Total
+Code of Conduct Claims
+Commitment to Align Disclosures with TCFD Recommendations
+Community Lending and Investments
+Community Lending and Investments Score
+Contractor Accidents
+Contractor Lost Working Days
+Controversies Responsible R&D
+Corruption Fines
+Critical Country 1 Score
+Customer Satisfaction
+Customer Satisfaction Score
+Deforestation Controversies Count
+Diseases of the Developing World Score
+Downstream scope 3 emissions Franchises
+Downstream scope 3 emissions Investments
+Downstream scope 3 emissions Leased Assets
+Downstream scope 3 emissions Other
+Downstream scope 3 emissions Processing of Sold Products
+Drug Delay
+Drug Delay Score
+Electricity Produced from Biomass
+Electricity Produced from Coal
+Electricity Produced from Combined Cycle Gas Turbine
+Electricity Produced from Gas
+Electricity Produced from Geothermal
+Electricity Produced from Hydro
+Electricity Produced from Nuclear
+Electricity Produced from Oil
+Electricity Produced from Solar
+Electricity Produced from Wind
+Electricity Purchased Per Tonne of Aluminum Production
+Electricity Purchased Per Tonne of Chlorine Production
+Embryonic Stem Cell Research Score
+Emission Controversies Count
+Emissions Target Annual Reduction
+Employee Accidents
+Employee Fatalities
+Employee Lost Working Days
+Employee Satisfaction
+Employee Satisfaction Score
+Employees With Disabilities
+Employees With Disabilities Score
+EMS Certified Percent
+EMS Certified Percent Score
+Env R&D Expenditures To Revenues in million
+Env R&D Expenditures To Revenues USD Score
+Environmental Assets Under Mgt Score
+Environmental Data Assurance Standard
+Environmental Data Independent Verification
+Environmental Expenditures
+Environmental Provisions
+Environmental R&D Expenditures
+Equator Principles or Env Project Financing
+Equator Principles or Env Project Financing Score
+ESG Assets Under Management
+Estimated CO2 Equivalents Emission Total Score
+Ethical Trading Initiative ETI Score
+Executives Cultural Diversity
+Executives Cultural Diversity Score
+Expanded Constituency Provision
+Exposure To Supply Risk ControversiesCount
+Extraction Virgin Natural Resources ControversiesCount
+Extractive Industries Transparency Initiative Score
+Fair Price Provision
+FDA Warning Letters
+Firearms Producer Ownership Percent
+Firearms Producer Revenue
+Firearms Producer Revenue Percent
+Firearms Retailer Ownership Percent
+Firearms Retailer Revenue
+Firearms Retailer Revenue Percent
+Flaring Gases
+Flaring Gases Score
+Flaring Gases To EVIC USD in million
+Flaring Gases To Revenues USD in million
+Flaring Gases To Revenues USD in million Score
+Fleet CO2 Emissions
+Fleet CO2 Emissions Score
+Fleet CO2 Emissions YoY
+Fleet Co2 per Passenger Kilometer
+Fleet Fuel Consumption
+Fleet Fuel Consumption Score
+Fossil Fuel Debt Finance count
+Fossil Fuel Divestment Policy Score
+Fossil Fuel Divestment Target Year
+Gambling 5% Revenues
+Gambling Operator and Producer Ownership Percent
+Gambling Operator and Producer Revenue
+Gambling Operator and Producer Revenue Percent
+Gambling Retailer Ownership Percent
+Gambling Retailer Revenue
+Gambling Retailer Revenue Percent
+Gambling Revenues
+GHG Emissions Direct Scope 1 Per Ammonia Production
+GHG Emissions Direct, Scope 1 - 3 year CAGR
+GHG Emissions Direct, Scope 1 - 5 year CAGR
+GHG Emissions Indirect, Scope 2 - 3 year CAGR
+GHG Emissions Indirect, Scope 2 - 5 year CAGR
+GHG Emissions Scope 1 and Scope 2 Per Adipic Acid Production
+GHG Emissions Scope 1 and Scope 2 Per Aluminum Production
+GHG Emissions Scope 1 and Scope 2 Per Ammonia Production
+GHG Emissions Scope 1 and Scope 2 Per Aromatics Production
+GHG Emissions Scope 1 and Scope 2 Per Carbon Black Production
+GHG Emissions Scope 1 and Scope 2 Per Coke Production
+GHG Emissions Scope 1 and Scope 2 Per EAF Carbon Steel Production
+GHG Emissions Scope 1 and Scope 2 Per EAF High Alloy Steel Production
+GHG Emissions Scope 1 and Scope 2 Per Ethylene Glycols Production
+GHG Emissions Scope 1 and Scope 2 Per Ethylene Oxide Production
+GHG Emissions Scope 1 and Scope 2 Per High Volume Chemicals Production
+GHG Emissions Scope 1 and Scope 2 Per Hot Metal Production
+GHG Emissions Scope 1 and Scope 2 Per Hydrogen Production
+GHG Emissions Scope 1 and Scope 2 Per Iron Casting Production
+GHG Emissions Scope 1 and Scope 2 Per Nitric Acid Production
+GHG Emissions Scope 1 and Scope 2 Per Sintered Ore Production
+GHG Emissions Scope 1 and Scope 2 Per Soda Ash Production
+GHG Emissions Scope 1 and Scope 2 Per Styrene Production
+GHG Emissions Scope 1 and Scope 2 Per Vinyl Chloride Production
+GMO Products Score
+Greenwashing Fines Controversies Count
+Grid Loss Percentage
+Healthy Food or Products Score
+Hybrid Vehicles Score
+Independent Verification of Operational GHG Emissions Data
+Indirect Energy Use
+Injuries To Million Hours
+Injuries To Million Hours Score
+Internal Carbon Price per Tonne
+Internal Carbon Price per Tonne Score Score
+Involuntary Turnover of Employees
+Labeled Wood Percentage
+Labeled Wood Percentage Score
+Land Environmental Impact Reduction Score
+Litigation Expenses
+Litigation Expenses Score
+Litigation Expenses To Revenues in million
+Litigation Expenses To Revenues in million Score
+Lobbying Controversies
+Long Term Set 4 Base Year GHG Emission Total
+Long Term Set 4 GHG Emission Base Year
+Long Term Set 4 GHG Emission Percentage Reduction Targeted
+Long Term Set 4 GHG Emission Scope
+Long Term Set 4 GHG Emission Target Set Year
+Long Term Set 4 GHG Emission Target Type
+Long Term Set 4 GHG Emission Target Unit
+Long Term Set 4 GHG Emission Target Year
+Long Term Set 4 Percentage of GHG Emission Covered by Target
+Long Term Set 5 Base Year GHG Emission Total
+Long Term Set 5 GHG Emission Base Year
+Long Term Set 5 GHG Emission Percentage Reduction Targeted
+Long Term Set 5 GHG Emission Scope
+Long Term Set 5 GHG Emission Target Set Year
+Long Term Set 5 GHG Emission Target Type
+Long Term Set 5 GHG Emission Target Unit
+Long Term Set 5 GHG Emission Target Year
+Long Term Set 5 Percentage of GHG Emission Covered by Target
+Long Term Set 6 Base Year GHG Emission Total
+Long Term Set 6 GHG Emission Base Year
+Long Term Set 6 GHG Emission Percentage Reduction Targeted
+Long Term Set 6 GHG Emission Scope
+Long Term Set 6 GHG Emission Target Set Year
+Long Term Set 6 GHG Emission Target Type
+Long Term Set 6 GHG Emission Target Unit
+Long Term Set 6 GHG Emission Target Year
+Long Term Set 6 Percentage of GHG Emission Covered by Target
+Lost Days To Total Days
+Lost Days To Total Days Score
+Lost Time Injury Rate Contractors
+Lost Time Injury Rate Employees
+Lost Time Injury Rate Total
+Lost Working Days
+Low Carbon Transition Controversies Count
+Methane Emissions
+Military Weapons or Personnel Ownership Percent
+Military Weapons or Personnel Revenue
+Military Weapons or Personnel Revenue Percent
+Not Approved Drug
+NOx and SOx Emissions Reduction Score
+NOx Emissions
+NOx Emissions To EVIC USD in million
+NOx Emissions To Revenues USD in million
+NOx Emissions To Revenues USD in million Score
+Nuclear 5% Revenues
+Nuclear Power Generation Ownership Percent
+Nuclear Power Generation Revenue
+Nuclear Power Generation Revenue Percent
+Nuclear Production
+Nuclear Production Score
+Nuclear Weapons Ownership Percent
+Occupational Diseases
+Occupational Diseases Score
+OHSMS Certified Percentage
+Oil and Gas Processing and Distribution Ownership Percent
+Oil and Gas Processing Transportation and Distribution Revenue Percent
+Oil and Gas Processing, Transportation and Distribution Revenue
+Oil and Gas Producer Ownership Percent
+Oil and Gas Producer Revenue
+Oil and Gas Producer Revenue Percent
+Oil and Gas-fired Power Generation Ownership Percent
+Oil and Gas-fired Power Generation Revenue
+Oil and Gas-fired Power Generation Revenue Percent
+Oil Sands Producer Ownership Percent
+Oil Sands Producer Revenue
+Oil Sands Producer Revenue Percent
+Oilfield Services Ownership Percent
+Oilfield Services Revenue
+Oilfield Services Revenue Percent
+Organic Products Initiatives Score
+Other - Ethnic Minorities Board Percentage
+Ozone-Depleting Substances To EVIC USD in million
+Percentage of Green Products
+Poison Pill
+Poison Pill Adoption Date
+Poison Pill Expiration Date
+Policy Data Privacy
+Policy Fair Trade Score
+Policy Responsible Marketing Score
+Pollution Controversies Count
+Product Access Low Price Score
+Product Sales at Discount to Emerging Markets Score
+QMS Certified Percent
+QMS Certified Percent Score
+Real Estate Sustainability Certifications
+Real Estate Sustainability Certifications Score
+Recent Accounting Controversies Count
+Recent Biodiversity and Ecosystem Controversies Count
+Recent Child Labor Controversies
+Recent Climate Risk Insurance Count
+Recent Critical Countries Controversies
+Recent Deforestation Controversies Count
+Recent Emission Controversies Count
+Recent Employee Health & Safety Controversies
+Recent Exposure To Supply Risk ControversiesCount
+Recent Extraction Virgin Natural Resources ControversiesCount
+Recent FDA Warning Letters
+Recent Fossil Fuel Debt Finance Count
+Recent Lobbying Controversies
+Recent Low Carbon Transition ControversiesCount
+Recent Mgt Compensation Controversies
+Recent Pollution Controversies Count
+Recent Public Health Controversies
+Recent ResourceUse Controversies count
+Recent Responsible R&D Controversies
+Recent Wastewater Management Controversies Count
+Recent Water and Marine Resource Controversies Count
+REIT Green Building Certified Percent
+Renewable Electricity Produced Without Bifurcation
+Renewable Energy Supply
+Renewable Energy Supply Score
+Reporting Against the TCFD Recommendations
+ResourceUse Controversies count
+Retailing Responsibility Score
+Revenue from Environmental Products
+Revenue from Environmental Products Score
+Revenues from Healthy Food or Products
+Revenues from Pork Products
+Salaries and Wages from CSR reporting
+Salary Gap
+Salary Gap Score
+Scope 1 and 2 Estimated Total To Revenues USD in Millions
+Scope 1 and Scope 2 Estimated Total To EVIC USD in Millions
+Scope 1 Estimated Date
+Scope 1 Estimated Total To Revenues USD in Millions
+Scope 2 Estimated Date
+Scope 2 Estimated Total To Revenues USD in Millions
+Scope 3 Upstream Estimated Total To EVIC USD in Millions
+Self-Reported Environmental Fines
+Self-Reported Environmental Fines Score
+Self-Reported Environmental Fines To Revenues in million
+Self-Reported Environmental Fines To Revenues in million Score
+Short Term Set 1 Base Year GHG Emission Total
+Short Term Set 1 GHG Emission Base Year
+Short Term Set 1 GHG Emission Percentage Reduction Targeted
+Short Term Set 1 GHG Emission Scope
+Short Term Set 1 GHG Emission Target Set Year
+Short Term Set 1 GHG Emission Target Type
+Short Term Set 1 GHG Emission Target Unit
+Short Term Set 1 GHG Emission Target Year
+Short Term Set 1 Percentage of GHG Emission Covered by Target
+Short Term Set 2 Base Year GHG Emission Total
+Short Term Set 2 GHG Emission Base Year
+Short Term Set 2 GHG Emission Percentage Reduction Targeted
+Short Term Set 2 GHG Emission Scope
+Short Term Set 2 GHG Emission Target Set Year
+Short Term Set 2 GHG Emission Target Type
+Short Term Set 2 GHG Emission Target Unit
+Short Term Set 2 GHG Emission Target Year
+Short Term Set 2 Percentage of GHG Emission Covered by Target
+SOx Emissions
+SOx Emissions To EVIC USD in million
+SOx Emissions To Revenues USD in million
+SOx Emissions To Revenues USD in million Score
+Strikes Score
+Sustainable Building Products Score
+Sustainable Palm Oil Production Target Year
+Sustainable Palm Oil Production-Year in which Target was set
+Targets Board Diversity - Target Set Year
+Targets Board Diversity - Target Year
+Targets Board Diversity Percent
+Tax Data Verification
+Temporary Staff Proportion
+Thermal Coal Producer Ownership Percent
+Thermal Coal Producer Revenue
+Thermal Coal Producer Revenue Percent
+Thermal Coal-fired Power Generation Ownership Percent
+Thermal Coal-fired Power Generation Revenue
+Thermal Coal-fired Power Generation Revenue Percent
+Tobacco 5% Revenues
+Tobacco Producer Ownership Percent
+Tobacco Producer Revenue
+Tobacco Producer Revenue Percent
+Tobacco Retailer Ownership Percent
+Tobacco Retailer Revenue
+Tobacco Retailer Revenue Percent
+Tobacco Revenues
+Total CO2 Equivalent Emission Scopes 1 and Scope 2 and Scope 3 Without Bifurcation
+Total CO2 Equivalent Emissions To Million Revenues USD YoY
+Total Energy Use from Properties
+Total Injury Rate Contractors
+Total Injury Rate Employees
+Total Injury Rate Total
+Total Water Usage Properties
+Trade Union Representation
+Trade Union Representation Score
+Training Costs Per Employee
+Training Costs Per Employee Score
+Training Costs Total
+Turnover of Employees
+Turnover of Employees Score
+Upstream scope 3 emissions Capital goods
+Upstream scope 3 emissions Leased Assets
+Upstream scope 3 emissions Other
+Upstream scope 3 emissions Waste Generated in Operations
+Uranium Mining and Processing Ownership Percent
+Uranium Mining and Processing Revenue
+Uranium Mining and Processing Revenue Percent
+VOC Emissions
+VOC Emissions To EVIC USD in million
+VOC Emissions To Revenues USD in million
+VOC Emissions To Revenues USD in million Score
+Voluntary Turnover of Employees
+Wastewater Management Controversies Count
+Water and Marine Resource Controversies Count
+Water Pollutant Emissions
+Water Pollutant Emissions To EVIC USD in million
+Water Pollutant Emissions To Revenues USD in million
+Water Pollutant Emissions To Revenues USD Score
+Water Technologies Score
+Water Withdrawal in Stressed Regions
+Water Withdrawal in Stressed Regions Percent
