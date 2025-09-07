@@ -186,7 +186,6 @@ TR.EnergyConsumptionInternationalAssuranceStandard
 TR.AnalyticNomCommInvolvment
 TR.AnalyticGHGEmissionsScope1and2and3ParisAligned
 TR.CDPEnergyUseTotal
-TR.IntegratedStrategyMD&A
 TR.RevenuesPorkProducts
 TR.MembershipofanyOrganisationsDedicatedtoClimaterelatedIssues
 TR.Scope3UpstreamTotalToEVIC
@@ -2157,7 +2156,6 @@ TR.SegmentUpstreamIncMedian
 TR.PriceHigh
 TR.SegmentNumofStoresOpenedByTotalNumOfEst
 TR.F.BUSOrdProf
-TR.UltPrntPctShHeldChg
 TR.F.BUSEmpPartTimePrdEnd
 TR.SegmentRevenueNumIncEstimates
 TR.SegmentUpstreamIncActProduct

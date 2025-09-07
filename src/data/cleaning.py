@@ -1,6 +1,7 @@
 """
 Collection of functions to help clean dataframes
 """
+import re
 from datetime import datetime
 
 import pandas as pd
@@ -8,6 +9,8 @@ import numpy as np
 from pathlib import Path
 from pandas import Series
 from pandas.core.groupby import DataFrameGroupBy
+
+from core.exceptions import DataValidationError
 
 SINCE: datetime = datetime(2010, 1, 1)
 TILL: datetime = datetime(2024, 12, 31)
@@ -65,11 +68,21 @@ def handle_duplicated_rows(df: pd.DataFrame) -> pd.DataFrame:
     return cleaned.sort_index()
 
 
-def resize_to_range_of_years(df: pd.DataFrame) -> pd.DataFrame:
+def resize_to_range_of_years(df: pd.DataFrame, instrument: str) -> pd.DataFrame:
     """This is to have the same range of rows throughout every dataframe"""
+    expected_length: int = TILL.year - SINCE.year + 1
+    years = pd.Index(range(SINCE.year, TILL.year + 1))
     result: pd.DataFrame = df.copy()
-    result.resample('1Y', origin=SINCE)
-    return result
+    result.index = pd.to_datetime(df.index, errors='coerce').year
+    result = result.loc[(result.index >= SINCE.year) & (result.index <= TILL.year)]
+    result = result.reindex(years, fill_value=None)
+    if result.shape[0] == expected_length:
+        return result.fillna(pd.NA)
+    msg: str = (
+        f"Dataframe has not the correct length.\n"
+        f"Is {result.shape[0]} instead of {expected_length}"
+    )
+    raise DataValidationError(msg, instrument, result.columns.to_list())
 
 
 def aggregate_years(df: pd.DataFrame) -> pd.DataFrame:
@@ -109,16 +122,30 @@ def standardize_historic(
         instrument (str): Company Identifier
     :return: standardized historical data
     """
-    without_empty_columns: pd.DataFrame = remove_empty_columns(df)
-    unique: pd.DataFrame = handle_duplicated_rows(without_empty_columns)
-    aggregated: pd.DataFrame = aggregate_years(unique)
-    resized: pd.DataFrame = resize_to_range_of_years(aggregated)
-    return attach_multiindex(resized, instrument)
+    try:
+        without_empty_columns: pd.DataFrame = remove_empty_columns(df)
+        data_valid(without_empty_columns, instrument)
+        unique: pd.DataFrame = handle_duplicated_rows(without_empty_columns)
+        aggregated: pd.DataFrame = aggregate_years(unique)
+        resized: pd.DataFrame = resize_to_range_of_years(aggregated, instrument)
+        return attach_multiindex(resized, instrument)
+    except Exception as exc:
+        raise DataValidationError(
+            f"Data validation error for {instrument}",
+            instrument
+        ) from exc
 
 
-def standardize_historic_collection(collection: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+def standardize_historic_collection(
+        collection: dict[str, pd.DataFrame],
+        raw_data_dir: Path,
+        iteration: int
+)-> dict[str, pd.DataFrame]:
     """Standardize all historical dataframes in a collection"""
     for company in collection:
+        collection[company].to_csv(
+            raw_data_dir / "historic" / f"raw-company-{company}-{iteration}.csv"
+        )
         collection[company] = standardize_historic(company, collection[company])
     return collection
 
@@ -144,9 +171,13 @@ def standardize_static(df: pd.DataFrame) -> pd.DataFrame:
     return unique.set_index('Instrument')
 
 
-def standardize_static_collection(collection: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+def standardize_static_collection(
+        collection: dict[str, pd.DataFrame],
+        raw_data_dir: Path
+) -> dict[str, pd.DataFrame]:
     """Standardize all static dataframes in a collection"""
     for company in collection:
+        collection[company].to_csv(raw_data_dir / "static" / f"raw-company-{company}.csv")
         collection[company] = standardize_static(collection[company])
     return collection
 
@@ -202,13 +233,47 @@ def historical_medians(df: pd.DataFrame) -> list[str]:
     return abrupt_change_columns
 
 
-def read_all_csv(directory: Path) -> dict[str, pd.DataFrame]:
+def read_all_static_csv(directory: Path) -> dict[str, pd.DataFrame]:
     """Read all csv files in a given directory"""
     data_dict: dict[str, pd.DataFrame] = {}
     for file in directory.glob("*.csv"):
         if file.is_file():
-            data_dict.update({file.name: pd.read_csv(file)})
+            dataframe: pd.DataFrame = pd.read_csv(file, index_col='Instrument')
+            data_dict.update({str(dataframe.index[0]): dataframe})
     return data_dict
+
+
+def read_all_historic_csv(directory: Path) -> dict[str, pd.DataFrame]:
+    """Read all csv files in a given directory"""
+    data_dict: dict[str, pd.DataFrame] = {}
+    for i, file in enumerate(directory.glob("*.csv")):
+        if file.is_file():
+            df: pd.DataFrame = pd.read_csv(file, index_col=[0, 1])
+            try:
+                df.index = pd.MultiIndex.from_arrays(
+                    [
+                        df.index.get_level_values(0),
+                        pd.to_datetime(df.index.get_level_values(1), format='%Y')
+                    ],
+                    names=df.index.names)
+            except ValueError:
+                raise ValueError(
+                    f"File:{file.name} with {df.index.get_level_values(1)} has not a valid date"
+                )
+            data_dict.update({str(df.index[0]): df})
+    return data_dict
+
+
+def not_in(directory: Path, directory2: Path) -> list[str]:
+    """Get all filenames in both directories and list all differences"""
+    files1: list[str] = [file.name for file in directory.glob("*.csv")]
+    names1: list[str] = [re.findall(r"raw-company-+(.*).csv", file)[0] for file in files1]
+    files2: list[str] = [file.name for file in directory2.glob("*.csv")]
+    names2: list[str] = [re.findall(r"company-+(.*).csv", file)[0] for file in files2]
+    not_in1: list[str] = [name for name in names1 if name not in names2]
+    not_in2: list[str] = [name for name in names2 if name not in names1]
+    not_in_both: list[str] = not_in1 + not_in2
+    return not_in_both
 
 
 def combine_all_static_frames(data_dict: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -221,4 +286,18 @@ def combine_all_historic_frames(data_dict: dict[str, pd.DataFrame]) -> pd.DataFr
     return pd.concat(data_dict.values())
 
 
-
+def data_valid(df: pd.DataFrame, instrument: str) -> bool:
+    """
+    Check if the dataframe is empty or has duplicate column names
+    :return bool: True if the dataframe is valid, else Raise DataValidationError
+    """
+    if df.empty:
+        raise DataValidationError("DataFrame is empty", df.columns.to_list())
+    duplicate_columns: list[str] = df.columns[df.columns.duplicated()].to_list()
+    if duplicate_columns:
+        raise DataValidationError(
+            f"Duplicate column names found: {duplicate_columns}",
+            instrument,
+            duplicate_columns
+        )
+    return True

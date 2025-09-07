@@ -23,7 +23,6 @@ TR.CH.HurdleRedemption
 TR.CG.Rating3
 TR.TOTALTURNOVEROFORDERBOOKTRADES
 TR.CDS30DAYSCORRELATION
-Temporary:
 TR.AircraftFuelExpensePrevNumIncEst
 TR.JPImpairmentLossINC
 TR.F.LossAdjExpn
@@ -129,3 +128,4 @@ TR.NetProfitESRBlendedSmartEst
 TR.EBITDASmartEstQtrtoYearAgoQtrGrowth
 TR.TBVPSSmartEstQtrtoYearAgoQtrGrowth
 TR.CDPIndependentVerificationofOperationalGHGEmissionsData
+TR.ULTPRNTPCTSHHELDCHG

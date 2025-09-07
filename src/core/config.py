@@ -38,7 +38,8 @@ class Config:
     dataset_dir: Path = data_dir / "datasets"
     static_dir: Path = dataset_dir / "static"
     historic_dir: Path = dataset_dir / "historic"
-    companies_file: Path = data_dir / "features" / "companies.txt"
+    raw_data_dir: Path = dataset_dir / "raw"
+    companies_file: Path = data_dir / "features" / "companiesA-Z.txt"
     static_features_file: Path = data_dir / "features" / "limited_static_features.txt"
     historic_features_file: Path = (
         data_dir / "features" / "limited_historic_features.txt"
@@ -46,12 +47,13 @@ class Config:
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
     # LSEG Settings
-    companies_chunk_size_static: int = 5
-    companies_chunk_size_historic: int = 10
+    companies_chunk_size_static: int = 10
+    companies_chunk_size_historic: int = 200
     chunk_size_static: int = 900
-    chunk_size_historic: int = 540
+    chunk_size_historic: int = 740
     skip_chunks: int = 0
     chunk_limit: int = 0
+    too_many_requests_delay: int = 0
     max_workers: int = 2
     max_retries: int = 3
     retry_delay: int = 150
@@ -84,6 +86,7 @@ class Config:
             "EDate": "CY2024",
             "Period": "FY0",
             "Frq": "CY",  # Yearly frequency
+            "interval": "yearly"
         }
 
         # Safely load feature files if they exist

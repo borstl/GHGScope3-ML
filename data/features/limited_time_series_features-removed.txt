@@ -472,7 +472,6 @@ TR.F.GEOFixedAssetsPurchCF
 TR.STPercentageofGHGEmissionCoveredbyTargetSet2
 TR.RecentControvAccounting
 TR.FleetCO2EmissionsperPassenger
-TR.UltPrntPctShHeldChg
 TR.CDPLTCat15DownstreamInvestmentsSet5
 TR.F.EmpFTEEquivPrdEnd5YrAvg
 TR.ClimateRelatedRisksAssessmentProcess

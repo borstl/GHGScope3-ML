@@ -22,6 +22,14 @@ class DataDownloadError(MLProjectError):
 
 class DataValidationError(MLProjectError):
     """Raised when data validation fails"""
+    def __init__(self, message: str, companies=None, features=None):
+        if features is None:
+            features = []
+        if companies is None:
+            companies = []
+        self.companies: list[str] = companies
+        self.features: list[str] = features
+        super().__init__(message)
 
 
 #TODO raise when configuration is wrong like empty company list

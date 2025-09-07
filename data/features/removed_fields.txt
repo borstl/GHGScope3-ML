@@ -162,6 +162,8 @@ TR.AUCTIONONLYPRICE
 TR.NetProfitESRBlendedSmartEst
 TR.EBITDASmartEstQtrtoYearAgoQtrGrowth
 TR.TBVPSSmartEstQtrtoYearAgoQtrGrowth
+TR.ULTPRNTPCTSHHELDCHG
+TR.IntegratedStrategyMD&A - cause whole chunk only loads recent year then
 
 False Value:
 TR.CDPIndependentVerificationofOperationalGHGEmissionsData

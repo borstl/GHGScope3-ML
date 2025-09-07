@@ -31,17 +31,10 @@ def get_empty_columns_names(csv: str | pathlib.Path) -> list[str]:
     return na_df.columns[df.isna().all()].tolist()
 
 
-def download_static(companies: list[str], chunk: list[str]) -> dict[str, pd.DataFrame]:
-    """Downloading static fields from a list of companies"""
-    data: DataFrame = pd.DataFrame(
-        ld.get_data(
-            universe=companies,
-            fields=chunk,
-            header_type=HeaderType.NAME
-        )
-    )
-    statdict: dict[str, pd.DataFrame] = extract_static_companies(data)
-    return standardize_static_collection(statdict)
+
+
+
+
 
 
 class LSEGDataDownloader:
@@ -120,6 +113,18 @@ class LSEGDataDownloader:
         all_data = remove_empty_columns(all_data)
         all_data.to_csv(self.config.data_dir / "datasets" / "all_data.csv")
 
+    def download_static(self, companies: list[str], chunk: list[str]) -> dict[str, pd.DataFrame]:
+        """Downloading static fields from a list of companies"""
+        data: DataFrame = pd.DataFrame(
+            ld.get_data(
+                universe=companies,
+                fields=chunk,
+                header_type=HeaderType.NAME
+            )
+        )
+        statdict: dict[str, pd.DataFrame] = extract_static_companies(data)
+        return standardize_static_collection(statdict, self.config.raw_data_dir)
+
     def download_static_from(
             self, companies: list[str],
             features: list[str]
@@ -128,55 +133,60 @@ class LSEGDataDownloader:
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                print("Downloading static data: for ", companies, "")
-                return download_static(companies, features)
+                print(f"Downloading static data: for {companies}")
+                return self.download_static(companies, features)
             except LDError as e:
                 msg: str = f"Error downloading static data {e}, retrying in {delay} seconds"
                 self.logger.exception(msg)
                 print(msg)
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
-        exc = DataDownloadError("Static download failed", companies, features)
+        exc = DataDownloadError("Static download failed", companies)
         self.logger.exception("Raised DataDownloadError:", exc_info=exc)
         raise exc
 
     def download_all_historic_chunks(self, companies: list[str]) -> dict[str, pd.DataFrame]:
         """Downloading all fields from a company and join them together"""
-        collection: dict[str, pd.DataFrame] = {}
-        for i, chunk in enumerate(self.config.historic_chunks):
-            msg: str = (
-                f"Downloading historic data: for {companies} "
-                f"with Chunk{i+1}:{len(self.config.historic_chunks)}"
+        msg: str = (
+            f"Downloading historic data: for {companies} "
+            f"with Chunk{1}:{len(self.config.historic_chunks)}"
+        )
+        self.logger.info(msg)
+        print(msg)
+        data: pd.DataFrame = self.download_historic_from(companies, self.config.historic_chunks[0])
+        standardized_data: dict[str, pd.DataFrame] = self.standardize_historic_data(data, 1)
+        collection: dict[str, pd.DataFrame] = standardized_data
+        for i, chunk in enumerate(self.config.historic_chunks[1:]):
+            msg = (
+                f"Downloading Chunk{i+2}:{len(self.config.historic_chunks)}"
             )
             self.logger.info(msg)
             print(msg)
-            #TODO
-            collection.update(self.download_historic_from(companies, chunk))
-            time.sleep(60)
-        for instrument, new_df in collection.items():
-            collection[instrument] = collection[instrument].join(new_df)
-            collection[instrument].to_csv(
-                self.config.historic_dir / f"company-{instrument}.csv",
-                index=True
-            )
+            data = self.download_historic_from(companies, chunk)
+            standardized_data = self.standardize_historic_data(data, i + 2)
+            for key, new_df in standardized_data.items():
+                collection[key] = collection[key].join(new_df)
+                collection[key].to_csv(self.config.historic_dir / f"company-{key}.csv",)
+            print(f"Wait {self.config.too_many_requests_delay} seconds for LSEG API to cool down")
+            time.sleep(self.config.too_many_requests_delay)
         return collection
 
     def download_historic_from(
             self,
             companies: list[str],
             chunk: list[str]
-    ) -> dict[str, pd.DataFrame]:
-        """Downloading content of with time series fields from a company"""
+    ) -> pd.DataFrame:
+        """Downloading content with time series fields from a company"""
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                data: DataFrame = ld.get_history(
+                data: pd.DataFrame = ld.get_history(
                     universe=companies,
                     fields=chunk,
                     parameters=self.config.params,
                     header_type=HeaderType.NAME,
                 )
-                return standardize_historic_collection(extract_historic_companies(data))
+                return data
             except LDError as e:
                 msg: str = f"Error downloading historic data {e}, retrying in {delay} seconds"
                 self.logger.info(msg)
@@ -186,6 +196,21 @@ class LSEGDataDownloader:
         exc = DataDownloadError("Historic download failed", companies, chunk)
         self.logger.exception("Historic download failed", exc_info=exc)
         raise exc
+
+    def standardize_historic_data(
+            self,
+            df: pd.DataFrame,
+            iteration: int
+    ) -> dict[str, pd.DataFrame]:
+        """
+        Standardize all historical loaded messy dataframes.
+        Only works for multiple loaded companies at once.
+        """
+        return standardize_historic_collection(
+            extract_historic_companies(df),
+            self.config.raw_data_dir,
+            iteration
+        )
 
     def download_gics_codes(self) -> None:
         """Downloading the GICS sector codes of all companies"""
