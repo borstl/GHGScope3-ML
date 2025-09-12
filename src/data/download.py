@@ -119,6 +119,7 @@ class LSEGDataDownloader:
             ld.get_data(
                 universe=companies,
                 fields=chunk,
+                parameters={'Curn': 'USD',},
                 header_type=HeaderType.NAME
             )
         )
@@ -155,6 +156,7 @@ class LSEGDataDownloader:
         print(msg)
         data: pd.DataFrame = self.download_historic_from(companies, self.config.historic_chunks[0])
         standardized_data: dict[str, pd.DataFrame] = self.standardize_historic_data(data, 1)
+        del data
         collection: dict[str, pd.DataFrame] = standardized_data
         for i, chunk in enumerate(self.config.historic_chunks[1:]):
             msg = (
@@ -164,9 +166,11 @@ class LSEGDataDownloader:
             print(msg)
             data = self.download_historic_from(companies, chunk)
             standardized_data = self.standardize_historic_data(data, i + 2)
+            del data
             for key, new_df in standardized_data.items():
                 collection[key] = collection[key].join(new_df)
                 collection[key].to_csv(self.config.historic_dir / f"company-{key}.csv",)
+            del standardized_data
             print(f"Wait {self.config.too_many_requests_delay} seconds for LSEG API to cool down")
             time.sleep(self.config.too_many_requests_delay)
         return collection

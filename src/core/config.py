@@ -82,11 +82,15 @@ class Config:
 
     def __post_init__(self) -> None:
         self.params = {
-            "SDate": "CY2010",
-            "EDate": "CY2024",
+            "SDate": "-14Y",
+            "EDate": "0Y",
             "Period": "FY0",
-            "Frq": "CY",  # Yearly frequency
-            "interval": "yearly"
+            "Frq": "FY",  # Yearly frequency
+            "interval": "yearly",
+            "Curn": "USD",
+            "EventType": "ALL",
+            "Methodology": "InterimSum",
+            "ConsolBasis": "Consolidated"
         }
 
         # Safely load feature files if they exist

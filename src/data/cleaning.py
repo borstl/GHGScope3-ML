@@ -39,13 +39,12 @@ def merge_duplicates(timeseries1: Series, timeseries2: Series) -> pd.DataFrame:
         # if second value is missing take the first one
         elif pd.isna(timeseries2[column]):
             merged[column] = timeseries1[column]
-        # if both values are same
+        # if both values are the same
         elif timeseries1[column] == timeseries2[column]:
             merged[column] = timeseries1[column]
         # if both values are different, print it and take the first one
-        # TODO: consider using mean of both values if possible?
+        # it seems that the first value seems to be the one from LSEG Workspace
         else:
-            print(f"Index {column}: values differ - {timeseries1[column]} (first), {timeseries2[column]} (second)")
             merged[column] = timeseries1[column]
     return merged.convert_dtypes()
 
@@ -126,8 +125,11 @@ def standardize_historic(
         without_empty_columns: pd.DataFrame = remove_empty_columns(df)
         data_valid(without_empty_columns, instrument)
         unique: pd.DataFrame = handle_duplicated_rows(without_empty_columns)
+        del without_empty_columns
         aggregated: pd.DataFrame = aggregate_years(unique)
+        del unique
         resized: pd.DataFrame = resize_to_range_of_years(aggregated, instrument)
+        del aggregated
         return attach_multiindex(resized, instrument)
     except Exception as exc:
         raise DataValidationError(
@@ -246,7 +248,7 @@ def read_all_static_csv(directory: Path) -> dict[str, pd.DataFrame]:
 def read_all_historic_csv(directory: Path) -> dict[str, pd.DataFrame]:
     """Read all csv files in a given directory"""
     data_dict: dict[str, pd.DataFrame] = {}
-    for i, file in enumerate(directory.glob("*.csv")):
+    for file in directory.glob("*.csv"):
         if file.is_file():
             df: pd.DataFrame = pd.read_csv(file, index_col=[0, 1])
             try:
