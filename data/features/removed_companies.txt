@@ -1,2 +1,0 @@
-is empty:
-['1786.T', '4549.T', '5838.T', '8032.T', 'ARM.OQ', 'GO.OQ', 'HAGA.IC', 'NTCO3.SA', 'TIDLOR.BK']

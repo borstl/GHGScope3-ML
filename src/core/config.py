@@ -38,18 +38,21 @@ class Config:
     dataset_dir: Path = data_dir / "datasets"
     static_dir: Path = dataset_dir / "static"
     historic_dir: Path = dataset_dir / "historic"
-    raw_data_dir: Path = dataset_dir / "raw"
-    companies_file: Path = data_dir / "features" / "companiesA-Z.txt"
-    static_features_file: Path = data_dir / "features" / "limited_static_features.txt"
-    historic_features_file: Path = (
-        data_dir / "features" / "limited_historic_features.txt"
-    )
+    filtered_dir: Path = dataset_dir / "filtered"
+    filtered_static_dir: Path = filtered_dir / "static"
+    filtered_historic_dir: Path = filtered_dir / "historic"
+    raw_data_dir: Path = filtered_dir / "raw"
+    features_dir: Path = data_dir / "features"
+    companies_file: Path = features_dir / "companiesA-Z.txt"
+    removed_companies_file: Path = features_dir / "removed-features" / "removed_companies.txt"
+    static_features_file: Path = features_dir / "filtered_static_featuresA-Z.txt"
+    historic_features_file: Path = features_dir / "filtered_time_series_featuresA-Z.txt"
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
     # LSEG Settings
-    companies_chunk_size_static: int = 10
-    companies_chunk_size_historic: int = 200
-    chunk_size_static: int = 900
+    companies_chunk_size_static: int = 50
+    companies_chunk_size_historic: int = 50
+    chunk_size_static: int = 500
     chunk_size_historic: int = 740
     skip_chunks: int = 0
     chunk_limit: int = 0
@@ -66,7 +69,7 @@ class Config:
     lseg_api_configurator.set_param("http.request-timeout", 20_000)
 
     # Date ranges
-    start_date: str = "2010-01-01"
+    start_date: str = "2016-01-01"
     end_date: str = "2024-12-31"
 
     # Logging
@@ -80,9 +83,11 @@ class Config:
     historic_features: list[str] = field(default_factory=list)
     historic_chunks: list[list[str]] = field(default_factory=list)
 
+    # SDate is minus 8 years to reach (2016-01-01),
+    # where there is the first TR.UpstreamScope3PurchasedGoodsAndServices reporting
     def __post_init__(self) -> None:
         self.params = {
-            "SDate": "-14Y",
+            "SDate": "-8Y",
             "EDate": "0Y",
             "Period": "FY0",
             "Frq": "FY",  # Yearly frequency

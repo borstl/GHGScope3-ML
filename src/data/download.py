@@ -134,7 +134,6 @@ class LSEGDataDownloader:
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                print(f"Downloading static data: for {companies}")
                 return self.download_static(companies, features)
             except LDError as e:
                 msg: str = f"Error downloading static data {e}, retrying in {delay} seconds"
@@ -154,23 +153,19 @@ class LSEGDataDownloader:
         )
         self.logger.info(msg)
         print(msg)
-        data: pd.DataFrame = self.download_historic_from(companies, self.config.historic_chunks[0])
-        standardized_data: dict[str, pd.DataFrame] = self.standardize_historic_data(data, 1)
-        del data
+        standardized_data: dict[str, pd.DataFrame] = (
+            self.download_historic_from(companies, self.config.historic_chunks[0], 0))
         collection: dict[str, pd.DataFrame] = standardized_data
         for i, chunk in enumerate(self.config.historic_chunks[1:]):
             msg = (
-                f"Downloading Chunk{i+2}:{len(self.config.historic_chunks)}"
+                f"Downloading Chunk{i+1}:{len(self.config.historic_chunks)}"
             )
             self.logger.info(msg)
             print(msg)
-            data = self.download_historic_from(companies, chunk)
-            standardized_data = self.standardize_historic_data(data, i + 2)
-            del data
+            standardized_data = self.download_historic_from(companies, chunk, i + 1)
             for key, new_df in standardized_data.items():
                 collection[key] = collection[key].join(new_df)
                 collection[key].to_csv(self.config.historic_dir / f"company-{key}.csv",)
-            del standardized_data
             print(f"Wait {self.config.too_many_requests_delay} seconds for LSEG API to cool down")
             time.sleep(self.config.too_many_requests_delay)
         return collection
@@ -178,19 +173,14 @@ class LSEGDataDownloader:
     def download_historic_from(
             self,
             companies: list[str],
-            chunk: list[str]
-    ) -> pd.DataFrame:
+            chunk: list[str],
+            iteration
+    ) -> dict[str, DataFrame]:
         """Downloading content with time series fields from a company"""
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                data: pd.DataFrame = ld.get_history(
-                    universe=companies,
-                    fields=chunk,
-                    parameters=self.config.params,
-                    header_type=HeaderType.NAME,
-                )
-                return data
+                return self.download_historic(companies, chunk, iteration)
             except LDError as e:
                 msg: str = f"Error downloading historic data {e}, retrying in {delay} seconds"
                 self.logger.info(msg)
@@ -200,6 +190,23 @@ class LSEGDataDownloader:
         exc = DataDownloadError("Historic download failed", companies, chunk)
         self.logger.exception("Historic download failed", exc_info=exc)
         raise exc
+
+    def download_historic(
+            self,
+            companies: list[str],
+            features: list[str],
+            iteration: int
+    ) -> dict[str, pd.DataFrame]:
+        """Downloading all fields from a company and join them together"""
+        data: DataFrame = pd.DataFrame(
+            ld.get_history(
+                universe=companies,
+                fields=features,
+                parameters=self.config.params,
+                header_type=HeaderType.NAME
+            )
+        )
+        return self.standardize_historic_data(data, iteration)
 
     def standardize_historic_data(
             self,

@@ -31,6 +31,9 @@ class DataValidationError(MLProjectError):
         self.features: list[str] = features
         super().__init__(message)
 
+    def __getcompanies__(self):
+        return self.companies
+
 
 #TODO raise when configuration is wrong like empty company list
 class ConfigurationError(MLProjectError):

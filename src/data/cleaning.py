@@ -12,7 +12,7 @@ from pandas.core.groupby import DataFrameGroupBy
 
 from core.exceptions import DataValidationError
 
-SINCE: datetime = datetime(2010, 1, 1)
+SINCE: datetime = datetime(2016, 1, 1)
 TILL: datetime = datetime(2024, 12, 31)
 
 
