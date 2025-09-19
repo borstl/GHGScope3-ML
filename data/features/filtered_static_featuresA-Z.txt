@@ -1,6 +1,24 @@
-TR.CompanySharesOutDate
-TR.CompanySrcFileDate
-TR.CompanyTotalFloat
+1 Week Total Return Cross Asset
+3-year Price PCT Change
+Average Daily Value Traded – 1 Week
+Average Daily Value Traded – 2 Months
+Average Daily Value Traded – 3 Months
+Average Daily Value Traded – 6 Months
+CUSIP (extended)
+Co. Business Summary
+Company Name
+Contact City Address
+Contact Country Name
+Contact Postal Code
+Contact Street Address
+Currency Code
+ESG Information Issuer Organization
+Fiscal Year End Date
+Main Phone Number
+ORG ID
+Primary Issue RIC
+Shares O/S Date
+Source Filing Date
 TR.AlphaMthly5Y
 TR.AlphaMthlyDown5Y
 TR.AlphaMthlyUp5Y
@@ -75,14 +93,11 @@ TR.CompanyIncorpRegion
 TR.CompanyInfoFinSummary
 TR.CompanyParentType
 TR.CompanyPublicSinceDate
-TR.CompanyReportCurrency
-TR.CUSIPExtended
 TR.DUNSNUMBER
 TR.DataThroughDate
 TR.DataThroughDateValuation
 TR.DirMovIdxDiMinus
 TR.DirMovIdxDiPlus
-TR.EsgOAPermId
 TR.EstimateId
 TR.ExchangeCode
 TR.ExchangeCountry
@@ -91,7 +106,6 @@ TR.ExchangeMarketIdCode
 TR.ExchangeName
 TR.ExchangeRegion
 TR.FirstTradeDate
-TR.CompanyFYearEnd
 TR.GICSIndustry
 TR.GICSIndustryCode
 TR.GICSIndustryGroup
@@ -205,7 +219,6 @@ TR.OrganizationType
 TR.OrganizationTypeCode
 TR.OrganizationVerified
 TR.OrganizationWebsite
-TR.OrgidCode
 TR.PEBackedStatus
 TR.Price150DayAverage
 TR.Price200DayAverage
@@ -365,7 +378,6 @@ TR.PrimListFunExist
 TR.PrimaryInstrument
 TR.PrimaryIssueRICCode
 TR.PrimaryQuote
-TR.PrimaryRIC
 TR.PrimaryRICCode
 TR.PrivateEquityBacked
 TR.QuoteID
@@ -435,7 +447,6 @@ TR.TRBCIndustryGroupAllCode
 TR.TRBCIndustryGroupCode
 TR.TaxAuthority
 TR.TaxAuthorityName
-TR.TickerSymbol
 TR.TickerSymbolCode
 TR.TickerSymbolOld
 TR.UltimateParent
@@ -475,3 +486,6 @@ TR.VolumePctChg1D
 TR.VolumePctChg5D30D
 TR.VolumeSum10D
 TR.WertCode
+Ticker Symbol
+Total Share Float
+Web Link to Home Page
