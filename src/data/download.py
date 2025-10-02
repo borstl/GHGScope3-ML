@@ -30,13 +30,6 @@ def get_empty_columns_names(csv: str | pathlib.Path) -> list[str]:
     na_df: DataFrame = df.replace("", pd.NA)
     return na_df.columns[df.isna().all()].tolist()
 
-
-
-
-
-
-
-
 class LSEGDataDownloader:
     """Downloading Data from LSEG API"""
     config: Config = None
