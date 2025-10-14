@@ -39,6 +39,7 @@ class Config:
     static_dir: Path = dataset_dir / "static"
     historic_dir: Path = dataset_dir / "historic"
     filtered_dir: Path = dataset_dir / "filtered"
+    eda_filtered_dir: Path = dataset_dir / "eda_filtered"
     filtered_static_dir: Path = filtered_dir / "static"
     filtered_historic_dir: Path = filtered_dir / "historic"
     raw_data_dir: Path = filtered_dir / "raw"
@@ -47,6 +48,7 @@ class Config:
     removed_companies_file: Path = features_dir / "removed-features" / "removed_companies.txt"
     static_features_file: Path = features_dir / "filtered_static_featuresA-Z.txt"
     historic_features_file: Path = features_dir / "filtered_time_series_featuresA-Z.txt"
+    historic_eda_features_file: Path = features_dir / "eda_filtered_time_series_featuresA-Z.txt"
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
     # LSEG Settings
