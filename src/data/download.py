@@ -117,7 +117,7 @@ class LSEGDataDownloader:
             )
         )
         statdict: dict[str, pd.DataFrame] = extract_static_companies(data)
-        return standardize_static_collection(statdict, self.config.raw_data_dir)
+        return standardize_static_collection(statdict, self.config.eda_raw_data_dir)
 
     def download_static_from(
             self, companies: list[str],
@@ -158,7 +158,7 @@ class LSEGDataDownloader:
             standardized_data = self.download_historic_from(companies, chunk, i + 1)
             for key, new_df in standardized_data.items():
                 collection[key] = collection[key].join(new_df)
-                collection[key].to_csv(self.config.historic_dir / f"company-{key}.csv",)
+                collection[key].to_csv(self.config.eda_filtered_historic_dir / f"company-{key}.csv",)
             print(f"Wait {self.config.too_many_requests_delay} seconds for LSEG API to cool down")
             time.sleep(self.config.too_many_requests_delay)
         return collection
@@ -212,7 +212,7 @@ class LSEGDataDownloader:
         """
         return standardize_historic_collection(
             extract_historic_companies(df),
-            self.config.raw_data_dir,
+            self.config.eda_raw_data_dir,
             iteration
         )
 

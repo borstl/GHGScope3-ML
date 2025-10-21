@@ -158,7 +158,7 @@ def extract_historic_companies(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
     Group the dataframe by instruments
     WORKAROUND: Only load multiple companies at once
     """
-    companies = df.columns.get_level_values(0).unique()
+    companies: pd.Index = df.columns.get_level_values(0).unique()
     company_dataframes: dict[str, pd.DataFrame] = {}
     for company in companies:
         df_company: pd.DataFrame = pd.DataFrame(df.xs(key=company, axis=1, level=0))
