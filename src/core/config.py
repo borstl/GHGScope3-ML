@@ -68,8 +68,8 @@ class Config:
     # LSEG Settings
     companies_chunk_size_static: int = 50
     companies_chunk_size_historic: int = 50
-    chunk_size_static: int = 740
-    chunk_size_historic: int = 720
+    chunk_size_static: int = 840
+    chunk_size_historic: int = 740
     skip_chunks: int = 0
     chunk_limit: int = 0
     too_many_requests_delay: int = 0

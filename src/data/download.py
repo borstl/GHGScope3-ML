@@ -147,7 +147,7 @@ class LSEGDataDownloader:
     ) -> dict[str, pd.DataFrame]:
         """Downloading all fields from a company and join them together"""
         i = 0
-        msg = f"Downloading Chunk {i + 1}:{len(self.config.historic_chunks)}"
+        msg = f"Downloading Chunk {i+1}:{len(self.config.historic_chunks)}"
         print(msg)
         standardized_data: dict[str, pd.DataFrame] = (
             self.download_historic_from(companies, self.config.historic_chunks[0], raw_data_dir, 0))
