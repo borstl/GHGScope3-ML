@@ -38,32 +38,38 @@ class Config:
     dataset_dir: Path = data_dir / "datasets"
     static_dir: Path = dataset_dir / "static"
     historic_dir: Path = dataset_dir / "historic"
-    filtered_dir: Path = dataset_dir / "filtered"
-    eda_raw_data_dir: Path = dataset_dir / "eda_raw"
-    eda_filtered_dir: Path = dataset_dir / "eda_filtered"
-    eda_filtered_historic_dir: Path = dataset_dir / "eda_filtered" / "historic"
-    eda_filtered_static_dir: Path = dataset_dir / "eda_filtered" / "static"
-    filtered_static_dir: Path = filtered_dir / "static"
-    filtered_historic_dir: Path = filtered_dir / "historic"
-    raw_data_dir: Path = filtered_dir / "raw"
     features_dir: Path = data_dir / "features"
-    test_dir: Path = data_dir / "test"
-    test_static_dir: Path = test_dir / "static"
-    test_historic_dir: Path = test_dir / "historic"
-    test_raw_data_dir: Path = test_dir / "raw"
     companies_file: Path = features_dir / "companiesA-Z.txt"
     removed_companies_file: Path = features_dir / "removed-features" / "removed_companies.txt"
-    static_features_file: Path = features_dir / "filtered_static_featuresA-Z.txt"
-    static_eda_features_file: Path = features_dir / "eda_filtered_static_featuresA-Z.txt"
-    historic_features_file: Path = features_dir / "filtered_time_series_featuresA-Z.txt"
-    historic_eda_features_file: Path = features_dir / "eda_filtered_time_series_featuresA-Z.txt"
+
+    filtered_dir: Path = dataset_dir / "filtered"
+    filtered_dir_static: Path = filtered_dir / "static"
+    filtered_dir_historic: Path = filtered_dir / "historic"
+    filtered_dir_raw_data: Path = filtered_dir / "raw"
+    filtered_features_file_static: Path = features_dir / "filtered_static_featuresA-Z.txt"
+    filtered_features_file_historic: Path = features_dir / "filtered_time_series_featuresA-Z.txt"
+
+    eda_filtered_dir: Path = dataset_dir / "eda_filtered"
+    eda_dir_raw_data: Path = eda_filtered_dir / "eda_raw"
+    eda_dir_static: Path = eda_filtered_dir / "static"
+    eda_dir_historic: Path = eda_filtered_dir / "historic"
+    eda_features_file_static: Path = features_dir / "eda_filtered_static_featuresA-Z.txt"
+    eda_features_file_historic: Path = features_dir / "eda_filtered_time_series_featuresA-Z.txt"
+
+    full_dir: Path = dataset_dir / "full"
+    full_dir_raw_data: Path = full_dir / "full_raw"
+    full_dir_static: Path = full_dir / "static"
+    full_dir_historic: Path = full_dir / "historic"
+    full_features_file_static: Path = features_dir / "full_static_features.txt"
+    full_features_file_historic: Path = features_dir / "full_time_series_features.txt"
+
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
     # LSEG Settings
     companies_chunk_size_static: int = 50
-    companies_chunk_size_historic: int = 100
-    chunk_size_static: int = 500
-    chunk_size_historic: int = 710
+    companies_chunk_size_historic: int = 50
+    chunk_size_static: int = 740
+    chunk_size_historic: int = 720
     skip_chunks: int = 0
     chunk_limit: int = 0
     too_many_requests_delay: int = 0
@@ -92,6 +98,7 @@ class Config:
     static_chunks: list[list[str]] = field(default_factory=list)
     historic_features: list[str] = field(default_factory=list)
     historic_chunks: list[list[str]] = field(default_factory=list)
+    removed_companies: list[str] = field(default_factory=list)
 
     # SDate is minus 8 years to reach (2016-01-01),
     # where there is the first TR.UpstreamScope3PurchasedGoodsAndServices reporting
@@ -112,20 +119,23 @@ class Config:
         try:
             with open(self.companies_file, encoding="utf-8") as f:
                 self.companies = [line.strip() for line in f if line.strip()]
-            with open(self.static_eda_features_file, encoding="utf-8") as f:
+            with open(self.full_features_file_static, encoding="utf-8") as f:
                 self.static_features = [line.strip() for line in f if line.strip()]
-            with open(self.historic_features_file, encoding="utf-8") as f:
+            with open(self.full_features_file_historic, encoding="utf-8") as f:
                 self.historic_features = [line.strip() for line in f if line.strip()]
+            with open(self.removed_companies_file, "r", encoding="utf-8") as f:
+                self.removed_companies = [line.rstrip() for line in f]
+
         except FileNotFoundError as exc:
             raise ConfigurationError("Required file not found") from exc
 
         self.companies_static_chunks: list[list[str]] = split_in_chunks(
-            self.companies,
+            [company for company in self.companies if self.removed_companies not in self.companies],
             chunk_size=self.companies_chunk_size_static,
             chunk_limit=self.chunk_limit,
         )
         self.companies_historic_chunks: list[list[str]] = split_in_chunks(
-            self.companies,
+            [company for company in self.companies if self.removed_companies not in self.companies],
             chunk_size=self.companies_chunk_size_historic,
             chunk_limit=self.chunk_limit,
         )

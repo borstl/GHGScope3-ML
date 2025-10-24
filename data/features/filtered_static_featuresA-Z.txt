@@ -1,24 +1,16 @@
-1 Week Total Return Cross Asset
-3-year Price PCT Change
-Average Daily Value Traded – 1 Week
-Average Daily Value Traded – 2 Months
-Average Daily Value Traded – 3 Months
-Average Daily Value Traded – 6 Months
-CUSIP (extended)
-Co. Business Summary
-Company Name
-Contact City Address
-Contact Country Name
-Contact Postal Code
-Contact Street Address
-Currency Code
-ESG Information Issuer Organization
-Fiscal Year End Date
-Main Phone Number
-ORG ID
-Primary Issue RIC
-Shares O/S Date
-Source Filing Date
+TR.CompanyCntPostalCodeAddr
+TR.CompanyName
+TR.CompanyCntCityAddr
+TR.CompanyCntStreetAddr
+TR.CompanyCntName
+TR.CompanyCntPostalCodeAddr
+TR.CompanyReportCurrency
+TR.EsgOAPermId
+TR.CompanyFYearEnd
+TR.CompanyPhoneMain
+TR.PrimaryRIC
+TR.CompanySharesOutDate
+TR.CompanySrcFileDate
 TR.AlphaMthly5Y
 TR.AlphaMthlyDown5Y
 TR.AlphaMthlyUp5Y
@@ -486,6 +478,6 @@ TR.VolumePctChg1D
 TR.VolumePctChg5D30D
 TR.VolumeSum10D
 TR.WertCode
-Ticker Symbol
-Total Share Float
-Web Link to Home Page
+TR.TickerSymbol
+TR.CompanyTotalFloat
+TR.CompanyLinkHome
