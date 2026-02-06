@@ -31,6 +31,23 @@ def get_empty_columns_names(csv: str | pathlib.Path) -> list[str]:
     na_df: DataFrame = df.replace("", pd.NA)
     return na_df.columns[df.isna().all()].tolist()
 
+
+def standardize_historic_data(
+        df: pd.DataFrame,
+        raw_data_dir: Path,
+        iteration: int
+) -> dict[str, pd.DataFrame]:
+    """
+    Standardize all historical loaded messy dataframes.
+    Only works for multiple loaded companies at once.
+    """
+    return standardize_historic_collection(
+        extract_historic_companies(df),
+        raw_data_dir,
+        iteration
+    )
+
+
 class LSEGDataDownloader:
     """Downloading Data from LSEG API"""
     config: Config = None
@@ -143,17 +160,16 @@ class LSEGDataDownloader:
     def download_historic_in_chunks(
             self,
             companies: list[str],
+            features: list[list[str]],
             raw_data_dir: Path,
     ) -> dict[str, pd.DataFrame]:
         """Downloading all fields from a company and join them together"""
-        i = 0
-        msg = f"Downloading Chunk {i+1}:{len(self.config.historic_chunks)}"
-        print(msg)
+        print(f"Downloading Chunk 1:{len(features)}")
         standardized_data: dict[str, pd.DataFrame] = (
-            self.download_historic_from(companies, self.config.historic_chunks[0], raw_data_dir, 0))
+            self.download_historic_from(companies, features[0], raw_data_dir, 0))
         collection: dict[str, pd.DataFrame] = standardized_data
-        for i, chunk in enumerate(self.config.historic_chunks[1:]):
-            print(msg)
+        for i, chunk in enumerate(features[146:]):
+            print(f"Downloading Chunk {i+146}:{len(features)}")
             standardized_data = self.download_historic_from(companies, chunk, raw_data_dir, i + 1)
             for key, new_df in standardized_data.items():
                 collection[key] = collection[key].join(new_df)
@@ -162,7 +178,7 @@ class LSEGDataDownloader:
     def download_historic_from(
             self,
             companies: list[str],
-            chunk: list[str],
+            features: list[str],
             raw_data_dir: Path,
             iteration
     ) -> dict[str, DataFrame]:
@@ -170,14 +186,14 @@ class LSEGDataDownloader:
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                return self.download_historic(companies, chunk, raw_data_dir, iteration)
+                return self.download_historic(companies, features, raw_data_dir, iteration)
             except LDError as e:
                 msg: str = f"Error downloading historic data {e}, retrying in {delay} seconds"
                 self.logger.info(msg)
                 print(msg)
                 time.sleep(delay)
                 delay *= self.config.retry_backoff_multiplier
-        exc = DataDownloadError("Historic download failed", companies, chunk)
+        exc = DataDownloadError("Historic download failed", companies, features)
         self.logger.exception("Historic download failed", exc_info=exc)
         raise exc
 
@@ -197,23 +213,7 @@ class LSEGDataDownloader:
                 header_type=HeaderType.NAME
             )
         )
-        return self.standardize_historic_data(data, raw_data_dir, iteration)
-
-    def standardize_historic_data(
-            self,
-            df: pd.DataFrame,
-            raw_data_dir: Path,
-            iteration: int
-    ) -> dict[str, pd.DataFrame]:
-        """
-        Standardize all historical loaded messy dataframes.
-        Only works for multiple loaded companies at once.
-        """
-        return standardize_historic_collection(
-            extract_historic_companies(df),
-            raw_data_dir,
-            iteration
-        )
+        return standardize_historic_data(data, raw_data_dir, iteration)
 
     def download_gics_codes(self) -> None:
         """Downloading the GICS sector codes of all companies"""

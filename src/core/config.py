@@ -41,6 +41,7 @@ class Config:
     features_dir: Path = data_dir / "features"
     companies_file: Path = features_dir / "companiesA-Z.txt"
     removed_companies_file: Path = features_dir / "removed-features" / "removed_companies.txt"
+    removed_features_file_historic: Path = features_dir / "removed-features" / "removed_time_series_features.txt"
 
     filtered_dir: Path = dataset_dir / "filtered"
     filtered_dir_static: Path = filtered_dir / "static"
@@ -66,10 +67,10 @@ class Config:
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
     # LSEG Settings
-    companies_chunk_size_static: int = 50
+    companies_chunk_size_static: int = 100
     companies_chunk_size_historic: int = 50
     chunk_size_static: int = 840
-    chunk_size_historic: int = 740
+    chunk_size_historic: int = 12
     skip_chunks: int = 0
     chunk_limit: int = 0
     too_many_requests_delay: int = 0
@@ -99,6 +100,7 @@ class Config:
     historic_features: list[str] = field(default_factory=list)
     historic_chunks: list[list[str]] = field(default_factory=list)
     removed_companies: list[str] = field(default_factory=list)
+    removed_features_historic: list[str] = field(default_factory=list)
 
     # SDate is minus 8 years to reach (2016-01-01),
     # where there is the first TR.UpstreamScope3PurchasedGoodsAndServices reporting
@@ -119,12 +121,14 @@ class Config:
         try:
             with open(self.companies_file, encoding="utf-8") as f:
                 self.companies = [line.strip() for line in f if line.strip()]
-            with open(self.full_features_file_static, encoding="utf-8") as f:
+            with open(self.filtered_features_file_static, encoding="utf-8") as f:
                 self.static_features = [line.strip() for line in f if line.strip()]
             with open(self.full_features_file_historic, encoding="utf-8") as f:
                 self.historic_features = [line.strip() for line in f if line.strip()]
             with open(self.removed_companies_file, "r", encoding="utf-8") as f:
-                self.removed_companies = [line.rstrip() for line in f]
+                self.removed_companies = [line.strip() for line in f]
+            with open(self.removed_features_file_historic, encoding="utf-8") as f:
+                self.removed_features_historic = [line.strip() for line in f]
 
         except FileNotFoundError as exc:
             raise ConfigurationError("Required file not found") from exc
@@ -145,7 +149,7 @@ class Config:
             chunk_limit=self.chunk_limit,
         )
         self.historic_chunks: list[list[str]] = split_in_chunks(
-            self.historic_features,
+            [f for f in self.historic_features if self.removed_features_historic not in self.historic_features],
             chunk_size=self.chunk_size_historic,
             chunk_limit=self.chunk_limit,
         )

@@ -170,7 +170,6 @@ TR.CO2EstimationMethod
 TR.CO2IndirectScope2
 TR.CO2IndirectScope3
 TR.CSRReporting
-TR.CSRReportingGRIScore
 TR.CSRReportingGlobalActivities
 TR.CSRReportingGlobalActivitiesScore
 TR.CSRReportingScope

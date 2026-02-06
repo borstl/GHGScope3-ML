@@ -3,7 +3,6 @@ TR.CompanyName
 TR.CompanyCntCityAddr
 TR.CompanyCntStreetAddr
 TR.CompanyCntName
-TR.CompanyCntPostalCodeAddr
 TR.CompanyReportCurrency
 TR.EsgOAPermId
 TR.CompanyFYearEnd
