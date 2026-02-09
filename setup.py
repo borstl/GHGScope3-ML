@@ -27,7 +27,7 @@ setup(
         "pandas",
         "matplotlib",
         "lseg-data",
-        "click",
+        "click", 'plotly', 'seaborn'
     ],
     entry_points={
         "console_scripts": [
