@@ -57,9 +57,9 @@ class Config:
     eda_features_file_static: Path = features_dir / "eda_filtered_static_featuresA-Z.txt"
     eda_features_file_historic: Path = features_dir / "eda_filtered_time_series_featuresA-Z.txt"
 
-    baseline_dir: Path = dataset_dir / "baseline"
-    baseline_static: Path = baseline_dir / "baseline_imputed_static.csv"
-    baseline_historic: Path = baseline_dir / "baseline_imputed_historic.csv"
+    median_dir: Path = dataset_dir / "median"
+    median_static: Path = median_dir / "median_imputed_static.csv"
+    median_historic: Path = median_dir / "median_imputed_historic.csv"
 
     full_dir: Path = dataset_dir / "full"
     full_dir_raw_data: Path = full_dir / "full_raw"
