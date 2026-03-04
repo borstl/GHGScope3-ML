@@ -48,6 +48,20 @@ def standardize_historic_data(
     )
 
 
+def download_static(companies: list[str], chunk: list[str], raw_data_dir: Path) -> dict[str, pd.DataFrame]:
+    """Downloading static fields from a list of companies"""
+    data: DataFrame = pd.DataFrame(
+        ld.get_data(
+            universe=companies,
+            fields=chunk,
+            parameters={'Curn': 'USD',},
+            header_type=HeaderType.NAME
+        )
+    )
+    statdict: dict[str, pd.DataFrame] = extract_static_companies(data)
+    return standardize_static_collection(statdict, raw_data_dir)
+
+
 class LSEGDataDownloader:
     """Downloading Data from LSEG API"""
     config: Config = None
@@ -124,19 +138,6 @@ class LSEGDataDownloader:
         all_data = remove_empty_columns(all_data)
         all_data.to_csv(self.config.data_dir / "datasets" / "all_data.csv")
 
-    def download_static(self, companies: list[str], chunk: list[str], raw_data_dir: Path) -> dict[str, pd.DataFrame]:
-        """Downloading static fields from a list of companies"""
-        data: DataFrame = pd.DataFrame(
-            ld.get_data(
-                universe=companies,
-                fields=chunk,
-                parameters={'Curn': 'USD',},
-                header_type=HeaderType.NAME
-            )
-        )
-        statdict: dict[str, pd.DataFrame] = extract_static_companies(data)
-        return standardize_static_collection(statdict, raw_data_dir)
-
     def download_static_from(
             self, companies: list[str],
             features: list[str],
@@ -146,7 +147,7 @@ class LSEGDataDownloader:
         delay = self.config.retry_delay
         for _ in range(self.config.max_retries):
             try:
-                return self.download_static(companies, features, raw_data_dir)
+                return download_static(companies, features, raw_data_dir)
             except LDError as e:
                 msg: str = f"Error downloading static data {e}, retrying in {delay} seconds"
                 self.logger.exception(msg)
@@ -168,8 +169,8 @@ class LSEGDataDownloader:
         standardized_data: dict[str, pd.DataFrame] = (
             self.download_historic_from(companies, features[0], raw_data_dir, 0))
         collection: dict[str, pd.DataFrame] = standardized_data
-        for i, chunk in enumerate(features[146:]):
-            print(f"Downloading Chunk {i+146}:{len(features)}")
+        for i, chunk in enumerate(features):
+            print(f"Downloading Chunk {i+2}:{len(features)}")
             standardized_data = self.download_historic_from(companies, chunk, raw_data_dir, i + 1)
             for key, new_df in standardized_data.items():
                 collection[key] = collection[key].join(new_df)

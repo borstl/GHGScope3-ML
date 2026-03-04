@@ -68,13 +68,19 @@ class Config:
     full_features_file_static: Path = features_dir / "full_static_features.txt"
     full_features_file_historic: Path = features_dir / "full_time_series_features.txt"
 
+    dataset_dir_2026: Path = dataset_dir / "2026"
+    raw_data_dir_2026: Path = dataset_dir_2026 / "raw"
+    static_dir_2026: Path = dataset_dir_2026 / "static"
+    historic_dir_2026: Path = dataset_dir_2026 / "historic"
+    features_file_static_2026: Path = features_dir / "2026_static_features.txt"
+
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
     # LSEG Settings
     companies_chunk_size_static: int = 100
     companies_chunk_size_historic: int = 50
     chunk_size_static: int = 840
-    chunk_size_historic: int = 12
+    chunk_size_historic: int = 800
     skip_chunks: int = 0
     chunk_limit: int = 0
     too_many_requests_delay: int = 0
@@ -127,7 +133,7 @@ class Config:
                 self.companies = [line.strip() for line in f if line.strip()]
             with open(self.filtered_features_file_static, encoding="utf-8") as f:
                 self.static_features = [line.strip() for line in f if line.strip()]
-            with open(self.full_features_file_historic, encoding="utf-8") as f:
+            with open(self.filtered_features_file_historic, encoding="utf-8") as f:
                 self.historic_features = [line.strip() for line in f if line.strip()]
             with open(self.removed_companies_file, "r", encoding="utf-8") as f:
                 self.removed_companies = [line.strip() for line in f]
@@ -146,6 +152,7 @@ class Config:
             [company for company in self.companies if self.removed_companies not in self.companies],
             chunk_size=self.companies_chunk_size_historic,
             chunk_limit=self.chunk_limit,
+            skipped_chunks=self.skip_chunks,
         )
         self.static_chunks: list[list[str]] = split_in_chunks(
             self.static_features,

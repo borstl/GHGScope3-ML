@@ -502,7 +502,7 @@ OTHER_DATA: list[str] = [
     'TR.IsRule144aRegistered',  # only same values
     'TR.IsCompositeQuote',  # only same values
     'TR.IsPrimaryQuote',  # don't know what this is and only 5 are not
-    'TR.OrgFoundedMonth',
+    'TR.OrgFoundedMonth', # to precise, year is enough
     'TR.IsPrimaryInstrument',  # only three are not
     'TR.PrimListFunExist',  # only same values
     'TR.HasFundamentalCoverage',  # only same values
