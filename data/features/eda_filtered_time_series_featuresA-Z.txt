@@ -1,5 +1,8 @@
+TR.AdultEntertainmentProducer
+TR.AdultEntertainmentRetailer
 TR.Agrochemical5PctRevenue
 TR.Alcohol
+TR.AlcoholProducer
 TR.AlcoholRetailing
 TR.AnalyticAccountingControv
 TR.AnalyticAccountingControvScore
@@ -33,6 +36,8 @@ TR.AnalyticCEOChairmanSeparation
 TR.AnalyticCEOChairmanSeparationScore
 TR.AnalyticCO2
 TR.AnalyticCO2EVIC
+TR.AnalyticCO2EquivalentEmissionsTotalYoY
+TR.AnalyticCO2IndirectScope3EVIC
 TR.AnalyticCSRCompIncentives
 TR.AnalyticCSRCompIncentivesScore
 TR.AnalyticChairpersonIndependent
@@ -62,6 +67,8 @@ TR.AnalyticExperiencedBoard
 TR.AnalyticGHGEmissionsDirectScope1ToEVIC
 TR.AnalyticGHGEmissionsIndirectScope2
 TR.AnalyticGHGEmissionsIndirectScope2ToEVIC
+TR.AnalyticGHGEmissionsScope1and2ParisAligned
+TR.AnalyticGHGEmissionsScope1and2YoYChgTonnes
 TR.AnalyticHealthSafetyPolicyScore
 TR.AnalyticHumanRightsPolicy
 TR.AnalyticHumanRightsPolicyScore
@@ -85,6 +92,8 @@ TR.AnalyticScope1andScope2andScope3EstTotalsToEVIC
 TR.AnalyticScope1andScope2andScope3EstTotalsToRevenues
 TR.AnalyticShareholderRightsPolicy
 TR.AnalyticShareholderRightsPolicyScore
+TR.AnalyticTargetVarianceGHGEmissionsScope1and2YoYChgPercent
+TR.AnalyticTargetVarianceGHGEmissionsScope1and2YoYChgTonnes
 TR.AnalyticTrainingDevPolicy
 TR.AnalyticTrainingDevPolicyScore
 TR.AnalyticVotingRights
@@ -94,6 +103,7 @@ TR.AnimalTesting
 TR.AnimalTestingCosmetics
 TR.AnimalTestingReduction
 TR.AnimalWellbeing
+TR.ArcticOilProducer
 TR.Armaments
 TR.AuditComm
 TR.AuditOversightofTax
@@ -208,6 +218,9 @@ TR.FacilitiesWaterWithdrawal
 TR.FinancialExposureToPhysicalRisk
 TR.FinancialExposureToTransitionRisk
 TR.FindingsfromSupplierMonitoring
+TR.Firearms
+TR.FirearmsProducer
+TR.FirearmsRetailer
 TR.FlexibleWorkingHours
 TR.FlexibleWorkingHoursScore
 TR.FossilFuelDivestmentPolicy
@@ -215,6 +228,8 @@ TR.FutureCapexAlignmentCommitment
 TR.FutureCapexAlignmentmethodologyDisclosure
 TR.GMOProducts
 TR.Gambling
+TR.GamblingOperatorandProducer
+TR.GamblingRetailer
 TR.GlobalCompact
 TR.GlobalCompactScore
 TR.GovernancePillarScoreGrade
@@ -367,15 +382,21 @@ TR.MembershipofBusinessAssociations
 TR.MembershipofanyOrganisationsDedicatedtoClimaterelatedIssues
 TR.MgtDepartures
 TR.MgtTraining
+TR.MilitaryWeaponsorPersonnel
 TR.MinimumSharesVote
 TR.MitigationHumanRightsIssues
 TR.NOxSOxEmissionsReduction
 TR.NamedPositionforTaxOversight
 TR.NominationComm
 TR.Nuclear
+TR.NuclearWeapons
 TR.OECDGuidelinesMultiEnterprises
 TR.OHSAS18001
 TR.ObesityRisk
+TR.OilGasProcessingTransportationDistribution
+TR.OilSandsProducer
+TR.OilandGasProducer
+TR.OilfieldServices
 TR.OrganicProductsInitiatives
 TR.PMReduction
 TR.PhasingoutInvestmentsinCarbonIntensiveAssetsorProducts
@@ -419,6 +440,7 @@ TR.PolicyIndigenousRightsConsent
 TR.PolicyIndigenousRightsConsultation
 TR.PolicyLocalSourcing
 TR.PolicyMinimumWage
+TR.PolicyNuclearSafety
 TR.PolicyPollution
 TR.PolicyResourceEfficiency
 TR.PolicyResponsibleMarketing
@@ -544,6 +566,8 @@ TR.SocialSupplyRiskAssessment
 TR.SpecificClimaterelatedRiskManagementProcess
 TR.StakeholderEngagement
 TR.StakeholderEngagementScore
+TR.StateOwnedEnterpriseSOE
+TR.StateOwnedEnterpriseSOEScore
 TR.Strikes
 TR.SupplierEnvironmentalCommitment
 TR.SupplierEnvironmentalDueDiligence
@@ -596,6 +620,11 @@ TR.TaxDataVerification
 TR.TaxFairnessCommitment
 TR.TaxOversightbyBoard
 TR.TaxesAligntoRevenues
+TR.ThermalCoalProducer
+TR.ThermalCoalfiredPowerGeneration
+TR.TobaccoProducer
+TR.TobaccoRetailing
+TR.TotalCO2EquivalentEmissionsScope1and2and3
 TR.ToxicChemicalsReduction
 TR.TransitionPlanFinancialPlanning
 TR.TransitionPlanOffsets
@@ -608,7 +637,9 @@ TR.UNGCViolationFlag
 TR.UNPRISignatory
 TR.UNPRISignatoryScore
 TR.UpstreamScope3PurchasedGoodsAndServices
+TR.UraniumMiningandProcessing
 TR.VOCEmissionsReduction
+TR.VetoPowerGoldenShare
 TR.ViolationsofHumanRights
 TR.VotingCap
 TR.VotingCapPctage
