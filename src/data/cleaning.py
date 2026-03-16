@@ -266,20 +266,20 @@ def read_all_historic_csv(directory: Path) -> dict[str, pd.DataFrame]:
     return data_dict
 
 
-def read_csv(directory: Path, filename: str, dtypes_filename: str, index_list: list[int] = [0]) -> pd.DataFrame:
+def read_csv(filepath: Path, dtypes_filepath: Path, index_list: list[int]|None) -> pd.DataFrame:
     """Read a csv dataframe and the dtypes csv."""
     dtypes: pd.DataFrame = pd.read_csv(
-        directory / dtypes_filename,
-        index_col=0
+        dtypes_filepath,
+        index_col=0,
     )
     dtypes_dict: dict[str, str] = {}
     for row in dtypes.itertuples(index=False):
         dtypes_dict[row[0]] = row[1]
 
     return pd.read_csv(
-        directory / filename,
+        filepath,
         dtype=dtypes_dict,
-        index_col=index_list
+        index_col=index_list,
     )
 
 

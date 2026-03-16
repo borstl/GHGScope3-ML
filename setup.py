@@ -27,7 +27,7 @@ setup(
         "pandas",
         "matplotlib",
         "lseg-data",
-        "click", 'plotly', 'seaborn', 'scikit-learn', 'catboost', 'numpy'
+        "click", 'plotly', 'seaborn', 'scikit-learn', 'catboost', 'numpy', 'scipy'
     ],
     entry_points={
         "console_scripts": [
