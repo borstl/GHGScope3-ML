@@ -572,3 +572,7 @@ UNSURE = [
     'TR.GICSSubIndustryCode', #focus on GICSSectorCodes
     'TR.HQAddressPostalCode' #focus on HeadquartersCity
 ]
+ALL_FEATURES = (
+        REPRESENTATIVE_INFO + CONTACT_INFO + IDENTIFIER_INFO + SUMMED_DATA +
+        TOO_PRECISE_DATA + REDUNDANT_DATA + DATES + OTHER_DATA + UNSURE
+)

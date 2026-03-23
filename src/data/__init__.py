@@ -2,11 +2,12 @@
 Data module for downloading, cleaning, and processing financial data.
 """
 
-from .constants import constants_features, constants_hq
+from .constants import constants_features, constants_hq, constants_industries
 from .download import LSEGDataDownloader
 from .cleaning import remove_empty_columns, handle_duplicated_rows, resize_to_range_of_years, \
     aggregate_years, attach_multiindex, standardize_historic, extract_historic_companies, \
     standardize_static, standardize_historic_collection, extract_static_companies, aggregate_static
+from .imputation import calculate_mode, calculate_median, fill_na_by_modes, fill_na_by_median
 
 __all__ = [
     'LSEGDataDownloader',
@@ -20,5 +21,9 @@ __all__ = [
     'standardize_static',
     'standardize_historic_collection',
     'extract_static_companies',
-    'aggregate_static'
+    'aggregate_static',
+    'calculate_mode',
+    'calculate_median',
+    'fill_na_by_modes',
+    'fill_na_by_median',
 ]
