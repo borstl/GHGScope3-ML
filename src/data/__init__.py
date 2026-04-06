@@ -2,7 +2,7 @@
 Data module for downloading, cleaning, and processing financial data.
 """
 
-from .constants import constants_features, constants_hq, constants_industries
+from .constants import constants_features, constants_hq, constants_industries, data_item_codes
 from .download import LSEGDataDownloader
 from .cleaning import remove_empty_columns, handle_duplicated_rows, resize_to_range_of_years, \
     aggregate_years, attach_multiindex, standardize_historic, extract_historic_companies, \
