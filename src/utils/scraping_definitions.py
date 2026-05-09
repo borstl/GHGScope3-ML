@@ -14,7 +14,7 @@ data item code and saves results to a JSON file.
 PREREQUISITES:
   1. pip install selenium
   2. Quit Chrome completely, then relaunch with remote debugging:
-       /Applications/Google\\ Chrome\\ Beta.app/Contents/MacOS/Google\\ Chrome\\ Beta \\
+       /Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome\\
          --remote-debugging-port=9222 \\
          --user-data-dir="$HOME/chrome-debug-profile"
   3. Log into Refinitiv Workspace and open the Data Item Browser
@@ -25,7 +25,7 @@ import json
 import time
 import sys
 from pathlib import Path
-from data.constants import data_item_codes
+from data.constants.dic import reload_historic_item_codes
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -43,16 +43,18 @@ from selenium.common.exceptions import (
 # Configuration
 # ---------------------------------------------------------------------------
 CHROME_DEBUG_PORT = 9222
-OUTPUT_FILE = Path(__file__).parent / "definitions.json"
-PROGRESS_FILE = Path(__file__).parent / "definitions_progress.json"
-WAIT_TIMEOUT = 15
-PAUSE_BETWEEN = 2
-MAX_RETRIES = 3
+OUTPUT_FILE = Path(__file__).parent / "reload_historic_definitions.json"
+PROGRESS_FILE = Path(__file__).parent / "reload_historic_definitions_progress.json"
+WAIT_TIMEOUT = 0
+PAUSE_BETWEEN = 1.5
+MAX_RETRIES = 1
 
 # ---------------------------------------------------------------------------
 # Data item codes
 # ---------------------------------------------------------------------------
-DATA_ITEM_CODES = data_item_codes.DATA_ITEM_CODES
+DATA_ITEM_CODES: set[str] = (
+    reload_historic_item_codes
+)
 
 
 # ---------------------------------------------------------------------------
@@ -177,7 +179,7 @@ def fetch_definition(driver, code: str) -> str | None:
     # Clear and type
     clear_search_bar(search_input)
     search_input.send_keys(code)
-    time.sleep(2.0)  # give Angular time to react
+    time.sleep(4.0)  # give Angular time to react
 
     # Wait for definition to change
     new_definition = wait_for_definition_change(driver, old_definition)

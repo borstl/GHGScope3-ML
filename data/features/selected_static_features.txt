@@ -1,0 +1,11 @@
+TR.TRBCIndustry
+TR.NAICSSector
+TR.NACEClassification
+TR.TRBCActivity
+TR.GICSSubIndustryCode
+TR.GICSIndustryCode
+TR.GICSSectorCode
+TR.HQCountryCode
+TR.HeadquartersCountry
+TR.GICSIndustryGroupCode
+TR.BusinessSector

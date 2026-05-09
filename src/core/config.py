@@ -68,6 +68,13 @@ class Config:
     full_features_file_static: Path = features_dir / "full_static_features.txt"
     full_features_file_historic: Path = features_dir / "full_time_series_features.txt"
 
+    selected_dir: Path = dataset_dir / "selected"
+    selected_dir_raw_data: Path = selected_dir / "selected_raw"
+    selected_dir_static: Path = selected_dir / "static"
+    selected_dir_historic: Path = selected_dir / "historic"
+    selected_features_file_static: Path = features_dir / "selected_static_features.txt"
+    selected_features_file_historic: Path = features_dir / "selected_time_series_features.txt"
+
     dataset_dir_2026: Path = dataset_dir / "2026"
     raw_data_dir_2026: Path = dataset_dir_2026 / "raw"
     static_dir_2026: Path = dataset_dir_2026 / "static"
@@ -131,9 +138,9 @@ class Config:
         try:
             with open(self.companies_file, encoding="utf-8") as f:
                 self.companies = [line.strip() for line in f if line.strip()]
-            with open(self.filtered_features_file_static, encoding="utf-8") as f:
+            with open(self.selected_features_file_static, encoding="utf-8") as f:
                 self.static_features = [line.strip() for line in f if line.strip()]
-            with open(self.filtered_features_file_historic, encoding="utf-8") as f:
+            with open(self.selected_features_file_historic, encoding="utf-8") as f:
                 self.historic_features = [line.strip() for line in f if line.strip()]
             with open(self.removed_companies_file, "r", encoding="utf-8") as f:
                 self.removed_companies = [line.strip() for line in f]

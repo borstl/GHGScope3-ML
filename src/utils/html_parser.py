@@ -31,6 +31,6 @@ def parse(html_path: Path, output: Path) -> None:
 if __name__ == "__main__":
     config = Config()
     parse(
-        config.data_dir / "html" / "Financial-Features-Static.html",
-        config.data_dir / "features" / "Financial-Features-Static.html"
+        config.data_dir / "html" / "All_Historic_Features.html",
+        config.data_dir / "features" / "All-Historic-Features.txt"
     )
