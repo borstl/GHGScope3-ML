@@ -83,6 +83,8 @@ class Config:
 
     lseg_config_file: Path = project_root / "Configuration" / "lseg-data.config.json"
 
+    TARGET = 'TR.UpstreamScope3PurchasedGoodsAndServices'
+
     # LSEG Settings
     companies_chunk_size_static: int = 100
     companies_chunk_size_historic: int = 50
