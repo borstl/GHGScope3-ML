@@ -1,28 +1,33 @@
 import numpy as np
 import pandas as pd
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, Literal
 
-FINE_GROUPING: list[str] = ['Date', 'TR.GICSSectorCode']
-COARSE_GROUPING: list[str] = ['TR.GICSSectorCode']
-def calculate_median(dataframe: pd.DataFrame) -> pd.DataFrame:
+
+def calculate_median(dataframe: pd.DataFrame,
+                     grouping_by: str = 'TR.GICSSectorCode',
+                     target: str = 'TR.UpstreamScope3PurchasedGoodsAndServices') -> pd.DataFrame:
+    fine_grouping: list[str] = ['Date', grouping_by]
+    coarse_grouping: list[str] = [grouping_by]
+
     df: pd.DataFrame = dataframe.copy()
     column_names: pd.Index = df.columns
     num_cols: pd.Index = df.select_dtypes(include=['Float64', 'Int64']).columns
     int_cols: pd.Index = df.select_dtypes(include='Int64').columns
     # exclude Scope 3.1 because it is the target variable
-    num_cols = num_cols.drop(FINE_GROUPING + ['TR.UpstreamScope3PurchasedGoodsAndServices'])
-    int_cols = int_cols.drop(FINE_GROUPING)
+    num_cols = num_cols.drop(target)
 
     df[int_cols] = df[int_cols].astype('Float64')
 
-    fine_grp = df.groupby(FINE_GROUPING, observed=True)[num_cols]
-    coarse_grp = df.groupby(COARSE_GROUPING, observed=True)[num_cols]
+    sector_fine_grp = df.groupby(fine_grouping, observed=True)[num_cols]
+    sector_coarse_grp = df.groupby(coarse_grouping, observed=True)[num_cols]
 
-    medians_fine: pd.DataFrame = fine_grp.median()
-    medians_coarse: pd.DataFrame = coarse_grp.median()
-    medians_combined: pd.DataFrame = medians_fine.where(~medians_fine.isna(), medians_coarse)
+    sector_medians_fine: pd.DataFrame = sector_fine_grp.median()
+    sector_medians_coarse: pd.DataFrame = sector_coarse_grp.median()
+    medians_combined: pd.DataFrame = sector_medians_fine.where(
+        ~sector_medians_fine.isna(), sector_medians_coarse
+    )
 
-    df = df.set_index(['Date', 'TR.GICSSectorCode'])
+    df = df.set_index(fine_grouping)
     mask = df[num_cols].isna()
     df[num_cols] = df[num_cols].where(~mask, medians_combined)
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
@@ -32,34 +37,40 @@ def calculate_median(dataframe: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+
 def _first_mode(df: pd.DataFrame):
     m = df.mode()
     return m.iloc[0] if not m.empty else np.nan
 
+
 # Mode for columns with categorical types
-def calculate_mode(dataframe: pd.DataFrame) -> pd.DataFrame:
+def calculate_mode(dataframe: pd.DataFrame, grouping_by: str = 'TR.GICSSectorCode') -> pd.DataFrame:
+    fine_grouping: list[str] = ['Date', grouping_by]
+    coarse_grouping: list[str] = [grouping_by]
+
     df: pd.DataFrame = dataframe.copy()
     column_names: pd.Index = df.columns
     cat_cols: pd.Index = df.select_dtypes(include=['object', 'category', 'string', 'bool']).columns
-    cat_cols = cat_cols.drop('Instrument')
+    cat_cols = cat_cols.drop(['Instrument', 'Date', grouping_by])
 
     modes_fine = (
-        df.groupby(FINE_GROUPING, observed=True)[cat_cols]
+        df.groupby(fine_grouping, observed=True)[cat_cols]
         .agg(_first_mode)
     )
     modes_coarse = (
-        df.groupby(COARSE_GROUPING, observed=True)[cat_cols]
+        df.groupby(coarse_grouping, observed=True)[cat_cols]
         .agg(_first_mode)
     )
     modes_combined = modes_fine.where(~modes_fine.isna(), modes_coarse)
 
-    df = df.set_index(['Date', 'TR.GICSSectorCode'])
+    df = df.set_index(fine_grouping)
     mask = df[cat_cols].isna()
     df[cat_cols] = df[cat_cols].where(~mask, modes_combined)
     df = df.reset_index(drop=False)
     df = df.reindex(columns=column_names)
 
     return df
+
 
 def fill_na_by_modes(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -107,6 +118,7 @@ def fill_na_by_modes(df: pd.DataFrame) -> pd.DataFrame:
         df.loc[mask, missing_value_col] = df.loc[mask, col].map(modes)
 
     return df
+
 
 def fill_na_by_median(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()

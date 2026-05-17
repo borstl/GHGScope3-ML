@@ -69,7 +69,7 @@ time_series_features: set[str] = {
     'TR.UpstreamScope3PurchasedGoodsAndServices',
 }
 
-#Additional features
+#Additional features (time series)
 additional_features: set[str] = {
     'TR.SupplierEnvironmentalCommitment',
     'TR.SupplierEnvironmentalDueDiligence',
