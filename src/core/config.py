@@ -36,6 +36,9 @@ class Config:
     project_root: Path = Path(__file__).parent.parent.parent
     data_dir: Path = project_root / "data"
     dataset_dir: Path = data_dir / "datasets"
+    training_dir: Path = dataset_dir / "training_data"
+    results_dir: Path = data_dir / "results"
+    raw_data_dir: Path = dataset_dir / "raw"
     static_dir: Path = dataset_dir / "static"
     historic_dir: Path = dataset_dir / "historic"
     features_dir: Path = data_dir / "features"
