@@ -78,6 +78,11 @@ class Config:
     selected_features_file_static: Path = features_dir / "selected_static_features.txt"
     selected_features_file_historic: Path = features_dir / "selected_time_series_features.txt"
 
+    verification_dir: Path = dataset_dir / "verification"
+    verification_dir_raw_data: Path = verification_dir / "verification_raw"
+    verification_dir_static: Path = verification_dir / "static"
+    verification_dir_historic: Path = verification_dir / "historic"
+
     dataset_dir_2026: Path = dataset_dir / "2026"
     raw_data_dir_2026: Path = dataset_dir_2026 / "raw"
     static_dir_2026: Path = dataset_dir_2026 / "static"
@@ -108,8 +113,8 @@ class Config:
     lseg_api_configurator.set_param("http.request-timeout", 20_000)
 
     # Date ranges
-    start_date: str = "2016-01-01"
-    end_date: str = "2024-12-31"
+    start_date: str = "2025-01-01"
+    end_date: str = "2025-12-31"
 
     # Logging
     log_level: str = "ERROR"

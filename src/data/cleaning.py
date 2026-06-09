@@ -12,8 +12,8 @@ from pandas.core.groupby import DataFrameGroupBy
 
 from core.exceptions import DataValidationError
 
-SINCE: datetime = datetime(2016, 1, 1)
-TILL: datetime = datetime(2024, 12, 31)
+SINCE: datetime = datetime(2025, 1, 1)
+TILL: datetime = datetime(2025, 12, 31)
 
 
 def merge_duplicates(timeseries1: Series, timeseries2: Series) -> pd.DataFrame:
